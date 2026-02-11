@@ -55,14 +55,9 @@ export function Navbar() {
 
     useEffect(() => {
         if (isMobileMenuOpen) {
-            // Prevent all scrolling on the body
             document.body.style.overflow = "hidden";
-            document.body.style.height = "100vh";
-            document.body.style.touchAction = "none";
         } else {
-            document.body.style.overflow = "";
-            document.body.style.height = "";
-            document.body.style.touchAction = "";
+            document.body.style.overflow = "unset";
         }
     }, [isMobileMenuOpen]);
 
