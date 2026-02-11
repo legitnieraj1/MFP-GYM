@@ -48,7 +48,7 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen bg-black flex items-center justify-center p-4 relative">
             {/* Background */}
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-30 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('/unnamed (6).webp')] bg-cover bg-center opacity-30 pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent pointer-events-none" />
 
             <Card className="w-full max-w-md bg-zinc-900/80 border-zinc-800 backdrop-blur-md relative z-10 shadow-2xl">
