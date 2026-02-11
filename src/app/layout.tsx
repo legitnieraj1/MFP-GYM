@@ -3,7 +3,7 @@ import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/components/providers";
-import script from "next/script";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const bebas = Bebas_Neue({ weight: "400", subsets: ["latin"], variable: "--font-bebas" });
@@ -36,3 +36,4 @@ export default function RootLayout({
     </html>
   );
 }
+

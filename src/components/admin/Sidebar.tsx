@@ -13,7 +13,9 @@ import {
     Settings,
     LogOut,
     Menu,
-    X
+    X,
+    UserPlus,
+    ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -27,7 +29,8 @@ const sidebarLinks = [
     { name: "Diet AI", href: "/admin/diet-ai", icon: Utensils },
     { name: "Notifications", href: "/admin/notifications", icon: Bell },
     { name: "Trainers", href: "/admin/trainers", icon: Dumbbell },
-    { name: "Members Log", href: "/admin/members-log", icon: CalendarCheck }, // Reusing icon for now or Import new one
+    { name: "Members Log", href: "/admin/members-log", icon: UserPlus }, // Changed icon and name to label
+    { name: "Today's Log", href: "/admin/attendance", icon: ClipboardList }, // Added new item
     { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
