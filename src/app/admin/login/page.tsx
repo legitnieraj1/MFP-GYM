@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
     return (
         <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center relative overflow-hidden">
             {/* Background Effects */}
-            <div className="absolute inset-0 bg-[url('/gym-bg-dark.jpg')] opacity-10 bg-cover bg-center" />
+            <div className="absolute inset-0 bg-[url('/auth-bg.webp')] opacity-10 bg-cover bg-center" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/90 to-[#0A0A0A]/80" />
 
             {/* Red Glow */}
