@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/components/providers";
 import Script from "next/script";
+import PushNotificationManager from "@/components/PushNotificationManager";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const bebas = Bebas_Neue({ weight: "400", subsets: ["latin"], variable: "--font-bebas" });
