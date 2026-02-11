@@ -74,7 +74,7 @@ export default function DietPage() {
     return (
         <div className="min-h-screen bg-black text-white relative">
             {/* Background */}
-            <div className="absolute inset-0 bg-[url('/unnamed (7).webp')] bg-cover bg-center opacity-20 pointer-events-none fixed" />
+            <div className="absolute inset-0 bg-[url('/diet-bg.webp')] bg-cover bg-center opacity-20 pointer-events-none fixed" />
             <Navbar />
             <div className="container mx-auto px-4 py-24">
                 <div className="max-w-4xl mx-auto">

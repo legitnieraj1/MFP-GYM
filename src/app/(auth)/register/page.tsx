@@ -57,7 +57,7 @@ export default function RegisterPage() {
     return (
         <div className="min-h-screen bg-black flex items-center justify-center p-4">
             {/* Background */}
-            <div className="absolute inset-0 bg-[url('/unnamed (6).webp')] bg-cover bg-center opacity-20 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('/auth-bg.webp')] bg-cover bg-center opacity-20 pointer-events-none" />
 
             <Card className="w-full max-w-2xl bg-zinc-900/90 border-zinc-800 backdrop-blur-sm relative z-10">
                 <CardHeader className="space-y-1 relative">
