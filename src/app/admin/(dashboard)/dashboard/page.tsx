@@ -83,7 +83,7 @@ export default function AdminDashboard() {
                         <UserPlus size={18} /> Add Member
                     </button>
                     <button
-                        onClick={() => alert("Broadcast feature coming soon!")}
+                        onClick={() => alert("Broadcast feature coming soon! (v3.0)")}
                         className="px-4 py-2 bg-zinc-800 text-white rounded-lg font-bold hover:bg-zinc-700 transition-colors border border-white/10 flex items-center gap-2"
                     >
                         <Bell size={18} /> BroadCast
