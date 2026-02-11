@@ -13,7 +13,7 @@ export default async function AttendancePage() {
                     <h1 className="text-4xl font-bebas tracking-wide text-white">Today's Log</h1>
                     <p className="text-zinc-400 mt-1 flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
-                        {format(today, "EEEE, MMMM do, yyyy")}
+                        {new Date().toLocaleDateString("en-US", { timeZone: "Asia/Kolkata", weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                     </p>
                 </div>
                 <div className="flex gap-4">
@@ -70,10 +70,10 @@ export default async function AttendancePage() {
                                     <span className="font-medium text-white">{log.users?.name || "Unknown User"}</span>
                                 </div>
                                 <div className="col-span-1 text-zinc-300 font-mono text-sm">
-                                    {format(new Date(log.check_in_time), "hh:mm a")}
+                                    {new Date(log.check_in_time).toLocaleTimeString("en-US", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: true })}
                                 </div>
                                 <div className="col-span-1 text-zinc-300 font-mono text-sm">
-                                    {log.check_out_time ? format(new Date(log.check_out_time), "hh:mm a") : "-"}
+                                    {log.check_out_time ? new Date(log.check_out_time).toLocaleTimeString("en-US", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: true }) : "-"}
                                 </div>
                                 <div className="col-span-1 flex justify-end">
                                     {log.check_out_time ? (

@@ -53,7 +53,18 @@ export async function markAttendance() {
                 // Get user name for better UX
                 const { data: profile } = await supabase.from('users').select('name').eq('id', user.id).single();
 
-                return { success: true, status: 'CHECK_OUT', name: profile?.name, time: new Date().toLocaleTimeString() };
+                return {
+                    success: true,
+                    status: 'CHECK_OUT',
+                    name: profile?.name,
+                    time: new Date().toLocaleTimeString('en-US', {
+                        timeZone: 'Asia/Kolkata',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: true
+                    })
+                };
             } else {
                 // Already checked out
                 const { data: profile } = await supabase.from('users').select('name').eq('id', user.id).single();
@@ -72,7 +83,18 @@ export async function markAttendance() {
             if (insertError) throw insertError;
 
             const { data: profile } = await supabase.from('users').select('name').eq('id', user.id).single();
-            return { success: true, status: 'CHECK_IN', name: profile?.name, time: new Date().toLocaleTimeString() };
+            return {
+                success: true,
+                status: 'CHECK_IN',
+                name: profile?.name,
+                time: new Date().toLocaleTimeString('en-US', {
+                    timeZone: 'Asia/Kolkata',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                })
+            };
         }
 
     } catch (error: any) {
