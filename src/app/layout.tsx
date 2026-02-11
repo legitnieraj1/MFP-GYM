@@ -30,6 +30,7 @@ export default function RootLayout({
       <body className={cn(inter.variable, bebas.variable, "font-sans antialiased text-white bg-black")}>
         <Providers>
           {children}
+          <PushNotificationManager />
         </Providers>
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </body>
