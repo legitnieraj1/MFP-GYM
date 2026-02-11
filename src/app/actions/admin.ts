@@ -120,19 +120,27 @@ export async function createMember(formData: FormData) {
         }
 
         // 4. Create Membership
-        const startDate = new Date();
-        const endDate = new Date();
-        let amount = 0;
+        // Check if manual join date is provided (for log entries)
+        const joinDateStr = formData.get("joinDate") as string;
+        const startDate = joinDateStr ? new Date(joinDateStr) : new Date();
+        const endDate = new Date(startDate);
+
+        // Check if manual amount is provided
+        const amountStr = formData.get("amount") as string;
+        let amount = amountStr ? parseFloat(amountStr) : 0;
+
+        if (amount === 0) {
+            if (plan === "BASIC") amount = 3000;
+            else if (plan === "PRO") amount = 4500;
+            else if (plan === "ELITE") amount = 6500;
+        }
 
         if (plan === "BASIC") {
             endDate.setMonth(startDate.getMonth() + 3);
-            amount = 3000;
         } else if (plan === "PRO") {
             endDate.setMonth(startDate.getMonth() + 6);
-            amount = 4500;
         } else if (plan === "ELITE") {
             endDate.setFullYear(startDate.getFullYear() + 1);
-            amount = 6500;
         }
 
         const { error: membershipError } = await supabaseAdmin
@@ -142,7 +150,7 @@ export async function createMember(formData: FormData) {
                 plan,
                 start_date: startDate.toISOString(),
                 end_date: endDate.toISOString(),
-                status: "ACTIVE",
+                status: endDate > new Date() ? "ACTIVE" : "EXPIRED", // Auto-expire if backdated too far
                 amount
             });
 

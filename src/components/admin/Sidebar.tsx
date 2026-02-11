@@ -27,6 +27,7 @@ const sidebarLinks = [
     { name: "Diet AI", href: "/admin/diet-ai", icon: Utensils },
     { name: "Notifications", href: "/admin/notifications", icon: Bell },
     { name: "Trainers", href: "/admin/trainers", icon: Dumbbell },
+    { name: "Members Log", href: "/admin/members-log", icon: CalendarCheck }, // Reusing icon for now or Import new one
     { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
