@@ -3,8 +3,7 @@ import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/components/providers";
-import Script from "next/script";
-import PushNotificationManager from "@/components/PushNotificationManager";
+import script from "next/script";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const bebas = Bebas_Neue({ weight: "400", subsets: ["latin"], variable: "--font-bebas" });
@@ -31,7 +30,6 @@ export default function RootLayout({
       <body className={cn(inter.variable, bebas.variable, "font-sans antialiased text-white bg-black")}>
         <Providers>
           {children}
-          <PushNotificationManager />
         </Providers>
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </body>

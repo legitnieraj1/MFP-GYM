@@ -27,16 +27,9 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 import { Search, Plus, User as UserIcon, Loader2, MoreVertical, Bell } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { sendFeeReminder } from "@/app/actions/notifications";
 
 type Member = {
     id: string;
@@ -276,26 +269,10 @@ export default function MembersPage() {
                                     {member.membership?.end_date ? new Date(member.membership.end_date).toLocaleDateString() : '-'}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-400 hover:text-white hover:bg-white/10">
-                                                <span className="sr-only">Open menu</span>
-                                                <MoreVertical className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="bg-[#0A0A0A] border-zinc-800 text-white">
-                                            <DropdownMenuItem
-                                                onClick={async () => {
-                                                    const res = await sendFeeReminder(member.id);
-                                                    if (res.success) alert("Fee reminder sent!");
-                                                    else alert(res.error);
-                                                }}
-                                                className="text-red-500 focus:text-red-400 focus:bg-red-500/10 cursor-pointer"
-                                            >
-                                                <Bell className="mr-2 h-4 w-4" /> Remind Fee
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-400 hover:text-white hover:bg-white/10">
+                                        <span className="sr-only">Open menu</span>
+                                        <MoreVertical className="h-4 w-4" />
+                                    </Button>
                                 </TableCell>
                             </TableRow>
                         ))}
