@@ -53,6 +53,11 @@ export default function LoginPage() {
 
             <Card className="w-full max-w-md bg-zinc-900/80 border-zinc-800 backdrop-blur-md relative z-10 shadow-2xl">
                 <CardHeader className="space-y-1 text-center">
+                    <div className="absolute top-4 left-4">
+                        <Link href="/" className="text-zinc-400 hover:text-white transition-colors flex items-center gap-1 text-sm">
+                            ← Home
+                        </Link>
+                    </div>
                     <CardTitle className="text-4xl font-heading text-white tracking-wide">WELCOME <span className="text-[#E50914]">BACK</span></CardTitle>
                     <CardDescription className="text-zinc-400">Enter your credentials to access your dashboard.</CardDescription>
                 </CardHeader>

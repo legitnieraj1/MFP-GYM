@@ -24,7 +24,7 @@ export default function DietPage() {
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                router.push("/login");
+                router.replace("/login");
             } else {
                 setUser(user);
                 // Optionally fetch existing plan?

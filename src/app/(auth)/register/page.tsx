@@ -60,9 +60,14 @@ export default function RegisterPage() {
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=2575&auto=format&fit=crop')] bg-cover bg-center opacity-20 pointer-events-none" />
 
             <Card className="w-full max-w-2xl bg-zinc-900/90 border-zinc-800 backdrop-blur-sm relative z-10">
-                <CardHeader className="space-y-1">
-                    <CardTitle className="text-3xl font-heading text-white">JOIN THE <span className="text-primary">ELITE</span></CardTitle>
-                    <CardDescription>Enter your details to start your journey.</CardDescription>
+                <CardHeader className="space-y-1 relative">
+                    <div className="absolute top-4 left-4">
+                        <Link href="/" className="text-zinc-400 hover:text-white transition-colors flex items-center gap-1 text-sm">
+                            ← Home
+                        </Link>
+                    </div>
+                    <CardTitle className="text-3xl font-heading text-white text-center mt-4">JOIN THE <span className="text-primary">ELITE</span></CardTitle>
+                    <CardDescription className="text-center">Enter your details to start your journey.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
