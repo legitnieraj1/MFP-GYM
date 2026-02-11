@@ -5,7 +5,10 @@ import { Users, UserPlus, Clock, TrendingUp, Bell, UserCheck, AlertTriangle } fr
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMembers, getAttendance, getPayments } from "@/app/actions/admin";
 
+import { useRouter } from "next/navigation";
+
 export default function AdminDashboard() {
+    const router = useRouter();
     const [stats, setStats] = useState({
         totalMembers: 0,
         activeNow: 0,
@@ -74,7 +77,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex gap-4">
                     <button
-                        onClick={() => window.location.href = '/admin/members'}
+                        onClick={() => router.push('/admin/members')} // Using router.push for client-side nav
                         className="px-4 py-2 bg-[#E50914] text-white rounded-lg font-bold hover:bg-[#E50914]/90 transition-colors shadow-[0_0_15px_-5px_#E50914] flex items-center gap-2"
                     >
                         <UserPlus size={18} /> Add Member
