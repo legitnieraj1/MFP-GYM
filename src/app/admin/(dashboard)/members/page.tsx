@@ -70,9 +70,7 @@ export default function MembersPage() {
         setSubmitLoading(true);
         const formData = new FormData(e.currentTarget);
 
-        if (!formData.get("photo")) {
-            formData.set("photo", `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.get("name")}`);
-        }
+
 
         const result = await createMember(formData);
 
@@ -108,7 +106,7 @@ export default function MembersPage() {
                         <DialogHeader>
                             <DialogTitle>Add New Member (Walk-in)</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleCreateMember} className="space-y-4 py-4">
+                        <form onSubmit={handleCreateMember} className="space-y-4 py-4" encType="multipart/form-data">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Full Name</Label>
@@ -123,6 +121,22 @@ export default function MembersPage() {
                                 <Label>Email</Label>
                                 <Input name="email" type="email" placeholder="john@example.com" required className="bg-zinc-900 border-zinc-800" />
                             </div>
+
+                            {/* Photo Upload */}
+                            <div className="space-y-2">
+                                <Label>Member Photo</Label>
+                                <div className="flex items-center gap-4">
+                                    <Input
+                                        type="file"
+                                        name="photo"
+                                        accept="image/*"
+                                        capture="environment" // Opens camera on mobile
+                                        className="bg-zinc-900 border-zinc-800 file:bg-[#E50914] file:text-white file:border-0 file:rounded-sm file:px-2 file:mr-4"
+                                    />
+                                </div>
+                                <p className="text-xs text-zinc-500">Upload from gallery or take a picture.</p>
+                            </div>
+
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="space-y-2">
                                     <Label>Age</Label>
@@ -143,14 +157,14 @@ export default function MembersPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label>Membership Plan</Label>
-                                <Select name="plan" defaultValue="MONTHLY">
+                                <Select name="plan" defaultValue="BASIC">
                                     <SelectTrigger className="bg-zinc-900 border-zinc-800">
                                         <SelectValue placeholder="Select Plan" />
                                     </SelectTrigger>
                                     <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
-                                        <SelectItem value="MONTHLY">Monthly</SelectItem>
-                                        <SelectItem value="QUARTERLY">Quarterly</SelectItem>
-                                        <SelectItem value="YEARLY">Yearly</SelectItem>
+                                        <SelectItem value="BASIC">BASIC (Quarterly)</SelectItem>
+                                        <SelectItem value="PRO">PRO (Half-Yearly)</SelectItem>
+                                        <SelectItem value="ELITE">ELITE (Yearly)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -159,7 +173,7 @@ export default function MembersPage() {
                                 <Button type="submit" disabled={submitLoading} className="w-full bg-[#E50914] hover:bg-[#E50914]/90">
                                     {submitLoading ? (
                                         <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Process Payment & Create
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Profile...
                                         </>
                                     ) : (
                                         "Create Member Account"

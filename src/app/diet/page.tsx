@@ -20,18 +20,28 @@ export default function DietPage() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
+    const [hasActiveMembership, setHasActiveMembership] = useState<boolean | null>(null);
+
     useEffect(() => {
-        const getUser = async () => {
+        const checkAccess = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 router.replace("/login");
-            } else {
-                setUser(user);
-                // Optionally fetch existing plan?
-                // For now, let's just let them generate.
+                return;
             }
+            setUser(user);
+
+            // Check membership status
+            const { data: membership } = await supabase
+                .from("memberships")
+                .select("status")
+                .eq("user_id", user.id)
+                .eq("status", "ACTIVE")
+                .maybeSingle();
+
+            setHasActiveMembership(!!membership);
         };
-        getUser();
+        checkAccess();
     }, [router, supabase]);
 
     const [formData, setFormData] = useState({
@@ -69,7 +79,34 @@ export default function DietPage() {
         }
     };
 
-    if (!user) return null; // or loading spinner
+    if (!user || hasActiveMembership === null) return (
+        <div className="min-h-screen bg-black flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-[#E50914]" />
+        </div>
+    );
+
+    if (hasActiveMembership === false) {
+        return (
+            <div className="min-h-screen bg-black text-white relative">
+                <Navbar />
+                <div className="container mx-auto px-4 py-32 flex flex-col items-center justify-center text-center h-[80vh]">
+                    <div className="w-20 h-20 bg-[#E50914]/10 rounded-full flex items-center justify-center mb-6">
+                        <Utensils className="w-10 h-10 text-[#E50914]" />
+                    </div>
+                    <h1 className="text-4xl font-heading font-bold mb-4">MEMBER <span className="text-[#E50914]">ONLY</span> ACCESS</h1>
+                    <p className="text-zinc-400 max-w-md mb-8">
+                        The AI Nutritionist is exclusively available to MFP GYM members with an active plan. Join us to unlock personalized diet plans.
+                    </p>
+                    <Button
+                        onClick={() => router.push("/#plans")}
+                        className="bg-[#E50914] hover:bg-[#E50914]/90 text-white font-bold px-8 py-6 text-xl rounded-full shadow-[0_0_20px_-5px_#E50914]"
+                    >
+                        VIEW PLANS
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-black text-white relative">

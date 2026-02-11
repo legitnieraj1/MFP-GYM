@@ -31,18 +31,14 @@ export async function getMembers() {
 
         if (error) throw error;
 
-        // Transform data to match UI expectations if needed, but Supabase returns nested objects nicely
-        // One-to-one relationship might return an array or object depending on definition, 
-        // but here we assume one active membership or the latest one.
-        // Actually, users-memberships is 1-to-many usually, but schema has it as 1-to-1 semantics or we get latest.
-        // Let's refine the query to get the active membership.
-
-        // For simplicity in this demo, fetching all memberships and filtering in JS or relying on the relationship
-        const members = data.map(user => ({
-            ...user,
-            // If membership is an array (one-to-many), take the first one (most recent?)
-            membership: Array.isArray(user.membership) ? user.membership[0] : user.membership
-        }));
+        // Filter out users who have absolutely no membership record (past or present)
+        // And ensure we pick the latest/most relevant membership if array
+        const members = data
+            .map(user => ({
+                ...user,
+                membership: Array.isArray(user.membership) ? user.membership[0] : user.membership
+            }))
+            .filter(member => member.membership !== null);
 
         return { success: true, data: members };
     } catch (error) {
@@ -63,12 +59,10 @@ export async function createMember(formData: FormData) {
         const height = parseFloat(formData.get("height") as string);
         const address = formData.get("address") as string;
         const plan = formData.get("plan") as string;
-        const photo = formData.get("photo") as string;
+        const photoFile = formData.get("photo") as File | null;
 
         // 1. Create Auth User
-        // We use a dummy password for walk-in users or generate one
         const password = phone; // temp password
-
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
             email,
             password,
@@ -80,8 +74,31 @@ export async function createMember(formData: FormData) {
         if (!authData.user) throw new Error("Failed to create auth user");
 
         const userId = authData.user.id;
+        let photoUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
 
-        // 2. Insert into public.users
+        // 2. Upload Photo if provided
+        if (photoFile && photoFile.size > 0) {
+            const { data: uploadData, error: uploadError } = await supabaseAdmin
+                .storage
+                .from("members")
+                .upload(`${userId}-${Date.now()}.png`, photoFile, {
+                    contentType: photoFile.type,
+                    upsert: true
+                });
+
+            if (!uploadError && uploadData) {
+                const { data: { publicUrl } } = supabaseAdmin
+                    .storage
+                    .from("members")
+                    .getPublicUrl(uploadData.path);
+
+                photoUrl = publicUrl;
+            } else {
+                console.error("Photo upload failed:", uploadError);
+            }
+        }
+
+        // 3. Insert into public.users
         const { error: profileError } = await supabaseAdmin
             .from("users")
             .insert({
@@ -93,30 +110,29 @@ export async function createMember(formData: FormData) {
                 weight,
                 height,
                 address,
-                photo,
+                photo: photoUrl,
                 role: "MEMBER"
             });
 
         if (profileError) {
-            // Rollback auth user creation if profile fails (manual compensation)
             await supabaseAdmin.auth.admin.deleteUser(userId);
             throw profileError;
         }
 
-        // 3. Create Membership
+        // 4. Create Membership
         const startDate = new Date();
         const endDate = new Date();
         let amount = 0;
 
-        if (plan === "MONTHLY") {
-            endDate.setMonth(startDate.getMonth() + 1);
-            amount = 1500;
-        } else if (plan === "QUARTERLY") {
+        if (plan === "BASIC") {
             endDate.setMonth(startDate.getMonth() + 3);
+            amount = 3000;
+        } else if (plan === "PRO") {
+            endDate.setMonth(startDate.getMonth() + 6);
             amount = 4500;
-        } else if (plan === "YEARLY") {
+        } else if (plan === "ELITE") {
             endDate.setFullYear(startDate.getFullYear() + 1);
-            amount = 12000;
+            amount = 6500;
         }
 
         const { error: membershipError } = await supabaseAdmin
