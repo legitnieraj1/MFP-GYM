@@ -13,7 +13,6 @@ export async function saveSubscription(subscription: string) {
     if (!supabaseAdmin) return { success: false, error: "Server config error" };
 
     try {
-        const { data: { user } } = await supabaseAdmin.auth.getUser();
         // Check auth directly or assume triggered by authenticated user via middleware
         // Since this saves to DB based on UUID, we really need the UserId
 
@@ -21,8 +20,7 @@ export async function saveSubscription(subscription: string) {
         // We need to fetch the current user ID securely.
         // But server actions in Next.js usually have access to cookies.
 
-        // Actually, supabaseAdmin.auth.getUser() might not work if we don't pass the cookie.
-        // We should use createClient() from @supabase/ssr for auth check in server actions.
+        // We should use createServerClient from @supabase/ssr for auth check in server actions.
 
         // FALLBACK: For MVP, we can assume this action is secure enough or pass userId? No, risky.
         // Better: Use `supabase` (normal client) to get user, then `supabaseAdmin` to write if RLS allows or assumes admin.
