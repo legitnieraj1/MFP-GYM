@@ -73,10 +73,16 @@ export default function AdminDashboard() {
                     <p className="text-muted-foreground">Overview of your gym&apos;s performance today.</p>
                 </div>
                 <div className="flex gap-4">
-                    <button className="px-4 py-2 bg-[#E50914] text-white rounded-lg font-bold hover:bg-[#E50914]/90 transition-colors shadow-[0_0_15px_-5px_#E50914] flex items-center gap-2">
+                    <button
+                        onClick={() => window.location.href = '/admin/members'}
+                        className="px-4 py-2 bg-[#E50914] text-white rounded-lg font-bold hover:bg-[#E50914]/90 transition-colors shadow-[0_0_15px_-5px_#E50914] flex items-center gap-2"
+                    >
                         <UserPlus size={18} /> Add Member
                     </button>
-                    <button className="px-4 py-2 bg-zinc-800 text-white rounded-lg font-bold hover:bg-zinc-700 transition-colors border border-white/10 flex items-center gap-2">
+                    <button
+                        onClick={() => alert("Broadcast feature coming soon!")}
+                        className="px-4 py-2 bg-zinc-800 text-white rounded-lg font-bold hover:bg-zinc-700 transition-colors border border-white/10 flex items-center gap-2"
+                    >
                         <Bell size={18} /> BroadCast
                     </button>
                 </div>
@@ -144,9 +150,9 @@ export default function AdminDashboard() {
                             ].map((item, i) => (
                                 <div key={i} className="flex items-center">
                                     <div className={`h-9 w-9 rounded-full flex items-center justify-center border border-white/10 ${item.type === 'checkin' ? 'bg-green-500/10 text-green-500' :
-                                            item.type === 'payment' ? 'bg-blue-500/10 text-blue-500' :
-                                                item.type === 'alert' ? 'bg-red-500/10 text-red-500' :
-                                                    'bg-zinc-800 text-white'
+                                        item.type === 'payment' ? 'bg-blue-500/10 text-blue-500' :
+                                            item.type === 'alert' ? 'bg-red-500/10 text-red-500' :
+                                                'bg-zinc-800 text-white'
                                         }`}>
                                         {item.type === 'checkin' ? <UserCheck size={16} /> :
                                             item.type === 'alert' ? <AlertTriangle size={16} /> :
