@@ -53,8 +53,15 @@ export function Footer() {
 
                 {/* Contact column removed as per request */}
             </div>
-            <div className="border-t border-white/5 mt-12 pt-8 text-center text-xs text-muted-foreground">
-                © {new Date().getFullYear()} MFP GYM. All rights reserved. Built for Greatness.
+            <div className="border-t border-white/5 mt-12 pt-8 flex flex-col md:flex-row items-center justify-center gap-2 text-xs text-muted-foreground text-center">
+                <span>&copy; {new Date().getFullYear()} MFP GYM. All rights reserved</span>
+                <span className="hidden md:inline">|</span>
+                <span className="flex items-center gap-1">
+                    Designed and powered by
+                    <Link href="https://elevexsocials.vercel.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center transition-opacity hover:opacity-80">
+                        <img src="/elevexsocialslogo.png" alt="Elevex Socials" className="h-14 w-auto" />
+                    </Link>
+                </span>
             </div>
         </footer>
     );

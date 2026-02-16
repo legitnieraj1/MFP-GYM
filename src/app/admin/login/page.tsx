@@ -21,32 +21,19 @@ export default function AdminLoginPage() {
         setError("");
 
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
+            const res = await fetch("/api/admin/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
             });
 
-            if (error) {
-                setError("Invalid admin credentials");
-                return;
-            }
+            const data = await res.json();
 
-            // Check if user is actually an admin
-            if (data.user) {
-                const { data: userData, error: userError } = await supabase
-                    .from("users")
-                    .select("role")
-                    .eq("id", data.user.id)
-                    .single();
-
-                if (userError || (userData?.role !== "ADMIN" && userData?.role !== "DALUXEADMIN")) {
-                    console.error("Login verification failed:", userError, userData);
-                    await supabase.auth.signOut();
-                    setError(`Access denied. Role: ${userData?.role || 'None'}`);
-                    return;
-                }
-
-                router.push("/admin/dashboard");
+            if (!res.ok) {
+                setError(data.error || "Login failed");
+            } else {
+                // success
+                window.location.href = "/admin/dashboard";
             }
         } catch (err) {
             setError("Something went wrong");

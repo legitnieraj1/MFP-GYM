@@ -6,43 +6,48 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, Utensils } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
-import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 
 export default function DietPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [plan, setPlan] = useState<any>(null);
-    const [user, setUser] = useState<any>(null);
-
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
+    const [session, setSession] = useState<any>(null);
     const [hasActiveMembership, setHasActiveMembership] = useState<boolean | null>(null);
+    const [checkingAuth, setCheckingAuth] = useState(true);
 
     useEffect(() => {
         const checkAccess = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
+            try {
+                // Fetch session from our API
+                const res = await fetch("/api/auth/session");
+                const data = await res.json();
+
+                if (!data.userId) {
+                    router.replace("/login");
+                    return;
+                }
+
+                setSession(data);
+
+                // Check membership by fetching member profile
+                const profileRes = await fetch("/api/auth/profile");
+                const profile = await profileRes.json();
+
+                if (profile && profile.membership_end) {
+                    const endDate = new Date(profile.membership_end);
+                    setHasActiveMembership(endDate > new Date());
+                } else {
+                    setHasActiveMembership(false);
+                }
+            } catch {
                 router.replace("/login");
-                return;
+            } finally {
+                setCheckingAuth(false);
             }
-            setUser(user);
-
-            // Check membership status
-            const { data: membership } = await supabase
-                .from("memberships")
-                .select("status")
-                .eq("user_id", user.id)
-                .eq("status", "ACTIVE")
-                .maybeSingle();
-
-            setHasActiveMembership(!!membership);
         };
         checkAccess();
-    }, [router, supabase]);
+    }, [router]);
 
     const [formData, setFormData] = useState({
         weight: "",
@@ -79,7 +84,7 @@ export default function DietPage() {
         }
     };
 
-    if (!user || hasActiveMembership === null) return (
+    if (checkingAuth || hasActiveMembership === null) return (
         <div className="min-h-screen bg-black flex items-center justify-center">
             <Loader2 className="w-8 h-8 animate-spin text-[#E50914]" />
         </div>
@@ -181,7 +186,6 @@ export default function DietPage() {
                                     <CardContent>
                                         <div className="space-y-4">
                                             {plan.weeklyPlan.split('\n').map((line: string, index: number) => {
-                                                // Heading 2 (##)
                                                 if (line.trim().startsWith('##')) {
                                                     return (
                                                         <h3 key={index} className="text-xl font-bold text-[#E50914] mt-6 mb-2 border-b border-zinc-800 pb-2">
@@ -189,7 +193,6 @@ export default function DietPage() {
                                                         </h3>
                                                     );
                                                 }
-                                                // Heading 3 (###)
                                                 if (line.trim().startsWith('###')) {
                                                     return (
                                                         <h4 key={index} className="text-lg font-semibold text-white mt-4 mb-2">
@@ -197,7 +200,6 @@ export default function DietPage() {
                                                         </h4>
                                                     );
                                                 }
-                                                // Bold headers (e.g. **Breakfast**)
                                                 if (line.trim().startsWith('**') && line.trim().endsWith('**')) {
                                                     return (
                                                         <h4 key={index} className="text-md font-bold text-zinc-200 mt-4 mb-1">
@@ -205,27 +207,24 @@ export default function DietPage() {
                                                         </h4>
                                                     );
                                                 }
-                                                // List items
                                                 if (line.trim().startsWith('-')) {
                                                     return (
                                                         <div key={index} className="flex items-start gap-2 ml-2 text-zinc-300">
                                                             <span className="text-[#E50914] mt-1.5">•</span>
                                                             <p className="flex-1 leading-relaxed">
-                                                                {line.replace(/^- /, '').split('**').map((part, i) =>
+                                                                {line.replace(/^- /, '').split('**').map((part: string, i: number) =>
                                                                     i % 2 === 1 ? <span key={i} className="font-semibold text-white">{part}</span> : part
                                                                 )}
                                                             </p>
                                                         </div>
                                                     );
                                                 }
-                                                // Empty lines
                                                 if (!line.trim()) {
                                                     return <div key={index} className="h-2"></div>;
                                                 }
-                                                // Regular text
                                                 return (
                                                     <p key={index} className="text-zinc-400">
-                                                        {line.split('**').map((part, i) =>
+                                                        {line.split('**').map((part: string, i: number) =>
                                                             i % 2 === 1 ? <strong key={i} className="text-white">{part}</strong> : part
                                                         )}
                                                     </p>

@@ -62,10 +62,11 @@ export async function createMember(formData: FormData) {
         const photoFile = formData.get("photo") as File | null;
 
         // 1. Create Auth User
-        const password = phone; // temp password
+        // Switch to Phone Auth predominantly
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-            email,
-            password,
+            email: email || undefined, // Email is optional now
+            phone: phone,
+            phone_confirm: true,
             email_confirm: true,
             user_metadata: { name }
         });
@@ -98,6 +99,8 @@ export async function createMember(formData: FormData) {
             }
         }
 
+        const enrollment_number = formData.get("enrollment_number") as string || null;
+
         // 3. Insert into public.users
         const { error: profileError } = await supabaseAdmin
             .from("users")
@@ -111,7 +114,8 @@ export async function createMember(formData: FormData) {
                 height,
                 address,
                 photo: photoUrl,
-                role: "MEMBER"
+                role: "MEMBER",
+                enrollment_number: enrollment_number
             });
 
         if (profileError) {
@@ -191,10 +195,10 @@ export async function getPayments() {
 
     try {
         const { data, error } = await supabaseAdmin
-            .from("payments")
+            .from("member_payments")
             .select(`
                 *,
-                user:users(*)
+                member:members(name, mobile)
             `)
             .order("created_at", { ascending: false })
             .limit(100);
@@ -204,6 +208,83 @@ export async function getPayments() {
     } catch (error) {
         console.error("Failed to fetch payments:", error);
         return { success: false, error: "Failed to fetch payments" };
+    }
+}
+
+export async function getPaymentStats() {
+    if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
+
+    try {
+        // 1. Total Revenue (Current Month)
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+        const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0).toISOString();
+
+        // Current Month Revenue
+        const { data: currentMonthData } = await supabaseAdmin
+            .from("member_payments")
+            .select("amount")
+            .eq("status", "SUCCESS")
+            .gte("created_at", startOfMonth);
+
+        const currentRevenue = currentMonthData?.reduce((sum, p) => sum + p.amount, 0) || 0;
+
+        // Previous Month Revenue
+        const { data: prevMonthData } = await supabaseAdmin
+            .from("member_payments")
+            .select("amount")
+            .eq("status", "SUCCESS")
+            .gte("created_at", startOfPrevMonth)
+            .lte("created_at", endOfPrevMonth);
+
+        const prevRevenue = prevMonthData?.reduce((sum, p) => sum + p.amount, 0) || 0;
+
+        // Percentage Change
+        let percentChange = 0;
+        if (prevRevenue > 0) {
+            percentChange = ((currentRevenue - prevRevenue) / prevRevenue) * 100;
+        } else if (currentRevenue > 0) {
+            percentChange = 100;
+        }
+
+        // 2. Pending Payments (Assuming status='PENDING' or similar, though real Razorpay flow is usually created -> paid. 
+        // If we store pending orders, we can count them. If not, this might be 0.)
+        // Let's assume schema has 'PENDING' for unverified/started transactions.
+        const { data: pendingData } = await supabaseAdmin
+            .from("member_payments")
+            .select("amount")
+            .eq("status", "PENDING");
+
+        const pendingAmount = pendingData?.reduce((sum, p) => sum + p.amount, 0) || 0;
+        const pendingCount = pendingData?.length || 0;
+
+        // 3. Average Transaction (All time? Or monthly? Usually All time or robust window)
+        // Let's take average of last 100 or all time. All time might be heavy if huge DB, but fine for now.
+        const { data: allSuccessData } = await supabaseAdmin
+            .from("member_payments")
+            .select("amount")
+            .eq("status", "SUCCESS");
+
+        const totalItems = allSuccessData?.length || 0;
+        const totalSum = allSuccessData?.reduce((sum, p) => sum + p.amount, 0) || 0;
+        const averageTransaction = totalItems > 0 ? totalSum / totalItems : 0;
+
+        return {
+            success: true,
+            data: {
+                revenue: currentRevenue,
+                prevRevenue,
+                percentChange: Number(percentChange.toFixed(1)),
+                pendingAmount,
+                pendingCount,
+                averageTransaction: Math.round(averageTransaction)
+            }
+        };
+
+    } catch (error) {
+        console.error("Failed to fetch payment stats:", error);
+        return { success: false, error: "Failed to fetch payment stats" };
     }
 }
 

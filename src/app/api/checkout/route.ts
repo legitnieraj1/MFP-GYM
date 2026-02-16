@@ -15,6 +15,7 @@ import Razorpay from "razorpay";
 
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { getSession } from "@/lib/session";
 
 // Initialize Razorpay inside the handler to avoid build-time errors if keys are missing
 
@@ -31,22 +32,10 @@ export async function POST(req: Request) {
         key_secret: process.env.RAZORPAY_KEY_SECRET!,
     });
 
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                get(name: string) {
-                    return cookieStore.get(name)?.value;
-                },
-            },
-        }
-    );
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const session = await getSession();
 
-    if (!user) {
+    if (!session || !session.userId) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 

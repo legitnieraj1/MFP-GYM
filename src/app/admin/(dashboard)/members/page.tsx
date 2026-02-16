@@ -118,8 +118,8 @@ export default function MembersPage() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label>Email</Label>
-                                <Input name="email" type="email" placeholder="john@example.com" required className="bg-zinc-900 border-zinc-800" />
+                                <Label>Email (Optional)</Label>
+                                <Input name="email" type="email" placeholder="john@example.com" className="bg-zinc-900 border-zinc-800" />
                             </div>
 
                             {/* Photo Upload */}

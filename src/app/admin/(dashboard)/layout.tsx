@@ -1,49 +1,32 @@
 import { Sidebar } from "@/components/admin/Sidebar";
 import { redirect } from "next/navigation";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { getSession } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export default async function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const cookieStore = await cookies();
+    const session = await getSession();
 
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                get(name: string) {
-                    return cookieStore.get(name)?.value;
-                },
-            },
-        }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    if (!session?.userId) {
         redirect("/admin/login");
     }
 
-    // Verify admin role
-    // We can use Supabase Admin client here or just query public.users if RLS allows reading own role
-    // Ideally, we should check claim or query DB.
-    // For now, let's query the 'users' table using the authenticated client (RLS should allow reading own role)
-    // OR use admin client if we want to be sure. But usually layout uses standard client.
+    if (!supabaseAdmin) {
+        return <div>Configuration error.</div>;
+    }
 
-    const { data: userData, error } = await supabase
+    // Verify admin role strictly from DB (or trust session if we trust the secret, but DB is safer)
+    const { data: userData, error } = await supabaseAdmin
         .from("users")
         .select("role")
-        .eq("id", user.id)
+        .eq("id", session.userId)
         .single();
 
     if (error || !userData || (userData.role !== "ADMIN" && userData.role !== "DALUXEADMIN")) {
-        // If not admin, redirect to home or show denied
-        console.error("Access denied:", error, userData);
-        redirect("/admin/login"); // or a 403 page
+        redirect("/admin/login");
     }
 
     return (

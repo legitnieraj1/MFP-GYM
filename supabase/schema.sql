@@ -196,3 +196,46 @@ create policy "Admins can insert/update diet plans"
 -- Trigger to create a user profile when a new user signs up specifically via email
 -- Note: Logic for 'Admin' creation usually happens manually or via specific seed script.
 -- For standard signups, we might want a trigger, but for now we'll handle creation via the Admin Dashboard logic explicitly.
+
+-- NEW PIN AUTH SYSTEM MEMBERS TABLE
+create table if not exists members (
+  id uuid primary key default gen_random_uuid(),
+  enroll_no text,
+  name text not null,
+  age int,
+  mobile text unique not null,
+  pin_hash text not null,
+  membership_start date,
+  membership_end date,
+  legacy_member boolean default false,
+  created_at timestamp default now()
+);
+
+-- Enable RLS (start with open access for server-side logic, restrict later if needed)
+alter table members enable row level security;
+
+create policy "Allow public read for auth check"
+  on members for select
+  using (true);
+
+create policy "Allow server-side insert/update"
+  on members for all
+  using (true); -- simplify for now, refine with robust RLS later
+
+-- MEMBER PAYMENTS TABLE (for PIN auth members)
+create table if not exists member_payments (
+  id uuid primary key default gen_random_uuid(),
+  member_id uuid references members(id) on delete cascade not null,
+  plan text not null,
+  amount float not null,
+  razorpay_order_id text,
+  razorpay_payment_id text,
+  status text check (status in ('SUCCESS', 'FAILED', 'PENDING')),
+  created_at timestamp default now()
+);
+
+alter table member_payments enable row level security;
+
+create policy "Allow all access to member_payments"
+  on member_payments for all
+  using (true);

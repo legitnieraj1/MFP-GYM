@@ -20,6 +20,7 @@ type LogMember = {
     joinDate: string;
     amount: string;
     plan: string;
+    enrollment_number?: string;
 };
 
 export default function MembersLogPage() {
@@ -28,6 +29,7 @@ export default function MembersLogPage() {
     const [ocrProgress, setOcrProgress] = useState(0);
     const [formData, setFormData] = useState<LogMember>({
         name: "",
+        enrollment_number: "",
         phone: "",
         age: "",
         weight: "",
@@ -104,6 +106,7 @@ export default function MembersLogPage() {
 
         const data = new FormData();
         data.append("name", formData.name);
+        if (formData.enrollment_number) data.append("enrollment_number", formData.enrollment_number);
         data.append("phone", formData.phone);
         data.append("email", `log_${Date.now()}@mfpgym.local`); // Placeholder email for log members
         data.append("age", formData.age);
@@ -127,7 +130,8 @@ export default function MembersLogPage() {
                 address: "",
                 joinDate: new Date().toISOString().split('T')[0],
                 amount: "",
-                plan: "BASIC"
+                plan: "BASIC",
+                enrollment_number: ""
             });
         } else {
             alert(result.error);
@@ -181,6 +185,15 @@ export default function MembersLogPage() {
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         className="bg-zinc-900 border-zinc-800 text-white"
                                         placeholder="e.g. Rahul Sharma"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-zinc-300">Enrollment Number (Optional)</Label>
+                                    <Input
+                                        value={formData.enrollment_number || ""}
+                                        onChange={(e) => setFormData({ ...formData, enrollment_number: e.target.value })}
+                                        className="bg-zinc-900 border-zinc-800 text-white"
+                                        placeholder="e.g. 101"
                                     />
                                 </div>
                                 <div className="space-y-2">

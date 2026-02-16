@@ -1,28 +1,28 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import crypto from "crypto";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { getSession } from "@/lib/session";
+
+const PLAN_DURATIONS: Record<string, number> = {
+    BASIC: 3,
+    PRO: 6,
+    ELITE: 12,
+};
+
+const PLAN_PRICES: Record<string, number> = {
+    BASIC: 3000,
+    PRO: 4500,
+    ELITE: 6500,
+};
 
 export async function POST(req: Request) {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                get(name: string) {
-                    return cookieStore.get(name)?.value;
-                },
-            },
-        }
-    );
+    const session = await getSession();
 
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    if (!session || !session.userId) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
+
+    const userId = session.userId;
 
     if (!supabaseAdmin) {
         return NextResponse.json({ message: "Server configuration error" }, { status: 500 });
@@ -31,6 +31,12 @@ export async function POST(req: Request) {
     try {
         const { orderId, paymentId, signature, plan } = await req.json();
 
+        // Validate plan
+        if (!PLAN_DURATIONS[plan]) {
+            return NextResponse.json({ message: "Invalid plan" }, { status: 400 });
+        }
+
+        // Verify Razorpay signature
         const body = orderId + "|" + paymentId;
         const expectedSignature = crypto
             .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
@@ -41,59 +47,42 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "Invalid signature" }, { status: 400 });
         }
 
-        // define duration based on plan
-        const durationMonths = plan === 'BASIC' ? 3 : plan === 'PRO' ? 6 : 12;
+        const durationMonths = PLAN_DURATIONS[plan];
+        const amount = PLAN_PRICES[plan];
         const startDate = new Date();
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + durationMonths);
 
-        // Update Memberships in Supabase
-        // Upsert by checking existing status or just insert new?
-        // Let's assume one active membership.
-        // We can use upsert if we have a unique constraint on (user_id) but schema didn't enforce it rigidly.
-        // Better to use `users` table constraint or just update if exists.
+        // Update membership dates directly on the members table
+        const { error: updateError } = await supabaseAdmin
+            .from("members")
+            .update({
+                membership_start: startDate.toISOString().split("T")[0],
+                membership_end: endDate.toISOString().split("T")[0],
+            })
+            .eq("id", userId);
 
-        // Let's check existing membership
-        const { data: existing } = await supabaseAdmin
-            .from("memberships")
-            .select("id")
-            .eq("user_id", user.id)
-            .single();
-
-        if (existing) {
-            await supabaseAdmin
-                .from("memberships")
-                .update({
-                    plan,
-                    start_date: startDate.toISOString(),
-                    end_date: endDate.toISOString(),
-                    status: "ACTIVE",
-                    amount: plan === 'BASIC' ? 3000 : plan === 'PRO' ? 4500 : 6500
-                })
-                .eq("id", existing.id);
-        } else {
-            await supabaseAdmin
-                .from("memberships")
-                .insert({
-                    user_id: user.id,
-                    plan,
-                    start_date: startDate.toISOString(),
-                    end_date: endDate.toISOString(),
-                    status: "ACTIVE",
-                    amount: plan === 'BASIC' ? 3000 : plan === 'PRO' ? 4500 : 6500
-                });
+        if (updateError) {
+            console.error("Membership update error:", updateError);
+            return NextResponse.json({ message: "Failed to activate membership" }, { status: 500 });
         }
 
-        // Record payment
-        await supabaseAdmin
-            .from("payments")
+        // Record payment in member_payments
+        const { error: paymentError } = await supabaseAdmin
+            .from("member_payments")
             .insert({
-                user_id: user.id,
-                amount: plan === 'BASIC' ? 3000 : plan === 'PRO' ? 4500 : 6500,
+                member_id: userId,
+                plan,
+                amount,
                 razorpay_order_id: orderId,
-                razorpay_payment_id: paymentId || "manual", // Fallback
-                status: "SUCCESS"
+                razorpay_payment_id: paymentId || "manual",
+                status: "SUCCESS",
             });
+
+        if (paymentError) {
+            console.error("Payment record error:", paymentError);
+            // Non-fatal — membership is already activated
+        }
 
         return NextResponse.json({ message: "Payment verified and membership activated" });
 

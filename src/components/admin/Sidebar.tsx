@@ -24,7 +24,6 @@ import { motion, AnimatePresence } from "framer-motion";
 const sidebarLinks = [
     { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Members", href: "/admin/members", icon: Users },
-    { name: "Attendance", href: "/admin/attendance", icon: CalendarCheck },
     { name: "Payments", href: "/admin/payments", icon: CreditCard },
     { name: "Diet AI", href: "/admin/diet-ai", icon: Utensils },
     { name: "Notifications", href: "/admin/notifications", icon: Bell },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getPayments } from "@/app/actions/admin";
+import { getPayments, getPaymentStats } from "@/app/actions/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -20,29 +20,64 @@ type PaymentRecord = {
     id: string;
     amount: number;
     status: string;
-    currency: string;
+    plan: string;
     razorpay_order_id: string;
     created_at: string;
-    user: {
+    member: {
         name: string;
-        email: string;
+        mobile: string;
     };
+};
+
+type PaymentStats = {
+    revenue: number;
+    prevRevenue: number;
+    percentChange: number;
+    pendingAmount: number;
+    pendingCount: number;
+    averageTransaction: number;
 };
 
 export default function PaymentsPage() {
     const [payments, setPayments] = useState<PaymentRecord[]>([]);
+    const [stats, setStats] = useState<PaymentStats>({
+        revenue: 0,
+        prevRevenue: 0,
+        percentChange: 0,
+        pendingAmount: 0,
+        pendingCount: 0,
+        averageTransaction: 0
+    });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetch() {
-            const res = await getPayments();
-            if (res.success && res.data) {
-                setPayments(res.data as unknown as PaymentRecord[]);
+            const [paymentsRes, statsRes] = await Promise.all([
+                getPayments(),
+                getPaymentStats()
+            ]);
+
+            if (paymentsRes.success && paymentsRes.data) {
+                setPayments(paymentsRes.data as unknown as PaymentRecord[]);
             }
+
+            if (statsRes.success && statsRes.data) {
+                setStats(statsRes.data);
+            }
+
             setLoading(false);
         }
         fetch();
     }, []);
+
+    // Format currency
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0
+        }).format(amount);
+    };
 
     return (
         <div className="space-y-8">
@@ -68,9 +103,11 @@ export default function PaymentsPage() {
                         <CardTitle className="text-sm font-medium text-zinc-400">Total Revenue (Monthly)</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-white">₹1,24,500</div>
-                        <p className="text-xs text-green-500 flex items-center mt-1">
-                            +12.5% from last month
+                        <div className="text-2xl font-bold text-white">
+                            {loading ? "..." : formatCurrency(stats.revenue)}
+                        </div>
+                        <p className={`text-xs flex items-center mt-1 ${stats.percentChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {stats.percentChange > 0 ? '+' : ''}{stats.percentChange}% from last month
                         </p>
                     </CardContent>
                 </Card>
@@ -79,9 +116,11 @@ export default function PaymentsPage() {
                         <CardTitle className="text-sm font-medium text-zinc-400">Pending Payments</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-white">₹12,000</div>
+                        <div className="text-2xl font-bold text-white">
+                            {loading ? "..." : formatCurrency(stats.pendingAmount)}
+                        </div>
                         <p className="text-xs text-zinc-500 mt-1">
-                            From 8 members
+                            from {stats.pendingCount} transactions
                         </p>
                     </CardContent>
                 </Card>
@@ -90,7 +129,9 @@ export default function PaymentsPage() {
                         <CardTitle className="text-sm font-medium text-zinc-400">Average Transaction</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-white">₹4,250</div>
+                        <div className="text-2xl font-bold text-white">
+                            {loading ? "..." : formatCurrency(stats.averageTransaction)}
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -134,11 +175,11 @@ export default function PaymentsPage() {
                                             {payment.razorpay_order_id}
                                         </TableCell>
                                         <TableCell>
-                                            <div className="font-medium text-white">{payment.user?.name || "Unknown"}</div>
-                                            <div className="text-xs text-zinc-500">{payment.user?.email || "-"}</div>
+                                            <div className="font-medium text-white">{payment.member?.name || "Unknown"}</div>
+                                            <div className="text-xs text-zinc-500">{payment.member?.mobile || "-"}</div>
                                         </TableCell>
                                         <TableCell className="text-white font-medium">
-                                            ₹{payment.amount.toLocaleString()}
+                                            {formatCurrency(payment.amount)}
                                         </TableCell>
                                         <TableCell>
                                             <Badge

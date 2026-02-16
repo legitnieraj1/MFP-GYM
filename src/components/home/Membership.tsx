@@ -54,25 +54,19 @@ const plans = [
     },
 ];
 
-export function Membership() {
+export function Membership({ user }: { user?: any }) {
     const router = useRouter();
     const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
 
     const handleSubscribe = async (plan: string) => {
         try {
             setLoadingPlan(plan);
 
-            // 1. Check Auth
-            const { data: { user } } = await supabase.auth.getUser();
-
+            // 1. Check Auth (User passed from server)
             if (!user) {
-                // Not logged in -> Redirect to register
-                router.push("/register");
+                // Not logged in -> Redirect to login
+                router.push("/login");
                 return;
             }
 
@@ -123,9 +117,8 @@ export function Membership() {
                     }
                 },
                 prefill: {
-                    name: user.user_metadata?.name || "",
-                    email: user.email,
-                    contact: user.phone || ""
+                    name: user.name || "",
+                    contact: user.mobile || user.phone || ""
                 },
                 theme: {
                     color: "#E50914"
