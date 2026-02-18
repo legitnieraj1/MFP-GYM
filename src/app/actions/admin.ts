@@ -2,6 +2,7 @@
 
 import { supabaseAdmin } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
+import { hashPin, formatMobile } from "@/lib/auth";
 
 // Helper to check admin role
 async function checkAdminRole(userId: string) {
@@ -21,24 +22,38 @@ export async function getMembers() {
 
     try {
         const { data, error } = await supabaseAdmin
-            .from("users")
-            .select(`
-                *,
-                membership:memberships(*)
-            `)
-            .eq("role", "MEMBER")
+            .from("members")
+            .select("*")
             .order("created_at", { ascending: false });
 
         if (error) throw error;
 
-        // Filter out users who have absolutely no membership record (past or present)
-        // And ensure we pick the latest/most relevant membership if array
-        const members = data
-            .map(user => ({
-                ...user,
-                membership: Array.isArray(user.membership) ? user.membership[0] : user.membership
-            }))
-            .filter(member => member.membership !== null);
+        const members = data.map(member => {
+            const isActive = member.membership_end ? new Date(member.membership_end) > new Date() : false;
+
+            // Calculate plan based on duration if needed, or default
+            let plan = "BASIC";
+            if (member.membership_start && member.membership_end) {
+                const start = new Date(member.membership_start);
+                const end = new Date(member.membership_end);
+                const days = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+                if (days > 300) plan = "ELITE";
+                else if (days > 150) plan = "PRO";
+            }
+
+            return {
+                id: member.id,
+                name: member.name,
+                email: "", // Not available in members table
+                phone: member.mobile,
+                photo: null, // Not available in members table
+                membership: member.membership_end ? {
+                    plan: plan,
+                    status: isActive ? "ACTIVE" : "EXPIRED",
+                    end_date: member.membership_end
+                } : null
+            };
+        });
 
         return { success: true, data: members };
     } catch (error) {
@@ -52,92 +67,19 @@ export async function createMember(formData: FormData) {
 
     try {
         const name = formData.get("name") as string;
-        const email = formData.get("email") as string;
+        // const email = formData.get("email") as string; // Optional/Unused in members table
         const phone = formData.get("phone") as string;
-        const age = parseInt(formData.get("age") as string);
-        const weight = parseFloat(formData.get("weight") as string);
-        const height = parseFloat(formData.get("height") as string);
-        const address = formData.get("address") as string;
         const plan = formData.get("plan") as string;
-        const photoFile = formData.get("photo") as File | null;
+        // const photoFile = formData.get("photo") as File | null; // Not storing photo in members table yet
 
-        // 1. Create Auth User
-        // Switch to Phone Auth predominantly
-        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-            email: email || undefined, // Email is optional now
-            phone: phone,
-            phone_confirm: true,
-            email_confirm: true,
-            user_metadata: { name }
-        });
+        const formattedMobile = formatMobile(phone);
+        const pin = phone.slice(-4); // Default PIN is last 4 digits
+        const pinHash = await hashPin(pin);
 
-        if (authError) throw authError;
-        if (!authData.user) throw new Error("Failed to create auth user");
-
-        const userId = authData.user.id;
-        let photoUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
-
-        // 2. Upload Photo if provided
-        if (photoFile && photoFile.size > 0) {
-            const { data: uploadData, error: uploadError } = await supabaseAdmin
-                .storage
-                .from("members")
-                .upload(`${userId}-${Date.now()}.png`, photoFile, {
-                    contentType: photoFile.type,
-                    upsert: true
-                });
-
-            if (!uploadError && uploadData) {
-                const { data: { publicUrl } } = supabaseAdmin
-                    .storage
-                    .from("members")
-                    .getPublicUrl(uploadData.path);
-
-                photoUrl = publicUrl;
-            } else {
-                console.error("Photo upload failed:", uploadError);
-            }
-        }
-
-        const enrollment_number = formData.get("enrollment_number") as string || null;
-
-        // 3. Insert into public.users
-        const { error: profileError } = await supabaseAdmin
-            .from("users")
-            .insert({
-                id: userId,
-                email,
-                name,
-                phone,
-                age,
-                weight,
-                height,
-                address,
-                photo: photoUrl,
-                role: "MEMBER",
-                enrollment_number: enrollment_number
-            });
-
-        if (profileError) {
-            await supabaseAdmin.auth.admin.deleteUser(userId);
-            throw profileError;
-        }
-
-        // 4. Create Membership
-        // Check if manual join date is provided (for log entries)
+        // Calculate Dates
         const joinDateStr = formData.get("joinDate") as string;
         const startDate = joinDateStr ? new Date(joinDateStr) : new Date();
         const endDate = new Date(startDate);
-
-        // Check if manual amount is provided
-        const amountStr = formData.get("amount") as string;
-        let amount = amountStr ? parseFloat(amountStr) : 0;
-
-        if (amount === 0) {
-            if (plan === "BASIC") amount = 3000;
-            else if (plan === "PRO") amount = 4500;
-            else if (plan === "ELITE") amount = 6500;
-        }
 
         if (plan === "BASIC") {
             endDate.setMonth(startDate.getMonth() + 3);
@@ -147,18 +89,20 @@ export async function createMember(formData: FormData) {
             endDate.setFullYear(startDate.getFullYear() + 1);
         }
 
-        const { error: membershipError } = await supabaseAdmin
-            .from("memberships")
+        // Insert into members table
+        const { error: memberError } = await supabaseAdmin
+            .from("members")
             .insert({
-                user_id: userId,
-                plan,
-                start_date: startDate.toISOString(),
-                end_date: endDate.toISOString(),
-                status: endDate > new Date() ? "ACTIVE" : "EXPIRED", // Auto-expire if backdated too far
-                amount
+                name,
+                mobile: formattedMobile,
+                pin_hash: pinHash,
+                membership_start: startDate.toISOString(),
+                membership_end: endDate.toISOString(),
+                legacy_member: false
             });
 
-        if (membershipError) throw membershipError;
+
+        if (memberError) throw memberError;
 
         revalidatePath("/admin/members");
         return { success: true };
@@ -177,7 +121,7 @@ export async function getAttendance() {
             .from("attendance")
             .select(`
                 *,
-                user:users(*)
+                member:members(name, mobile)
             `)
             .order("check_in_time", { ascending: false })
             .limit(100);

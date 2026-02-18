@@ -1,37 +1,29 @@
 "use server";
 
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { supabaseAdmin } from "@/lib/supabase";
+
+import { getSession } from "@/lib/auth"; // Import custom session getter
 
 export async function markAttendance() {
-    const cookieStore = await cookies();
+    if (!supabaseAdmin) {
+        return { success: false, error: "Server configuration error" };
+    }
 
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() { return cookieStore.getAll() },
-                setAll(cookiesToSet) { }
-            }
-        }
-    );
-
-    // 1. Check Authentication
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    // 1. Check Authentication using custom session
+    const session = await getSession();
+    if (!session || !session.userId) {
         return { success: false, error: "Not authenticated" };
     }
+    const userId = session.userId;
 
     try {
         // 2. Check for existing record for today
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-        const { data: existingRecord, error: fetchError } = await supabase
+        const { data: existingRecord, error: fetchError } = await supabaseAdmin
             .from('attendance')
             .select('*')
-            .eq('user_id', user.id)
+            .eq('user_id', userId)
             .eq('date', today)
             .single();
 
@@ -43,15 +35,15 @@ export async function markAttendance() {
         if (existingRecord) {
             // 3. If checked in but not checked out -> Check Out
             if (!existingRecord.check_out_time) {
-                const { error: updateError } = await supabase
+                const { error: updateError } = await supabaseAdmin
                     .from('attendance')
                     .update({ check_out_time: new Date().toISOString() })
                     .eq('id', existingRecord.id);
 
                 if (updateError) throw updateError;
 
-                // Get user name for better UX
-                const { data: profile } = await supabase.from('users').select('name').eq('id', user.id).single();
+                // Get user name for better UX from MEMBERS table
+                const { data: profile } = await supabaseAdmin.from('members').select('name').eq('id', userId).single();
 
                 return {
                     success: true,
@@ -67,22 +59,22 @@ export async function markAttendance() {
                 };
             } else {
                 // Already checked out
-                const { data: profile } = await supabase.from('users').select('name').eq('id', user.id).single();
+                const { data: profile } = await supabaseAdmin.from('members').select('name').eq('id', userId).single();
                 return { success: true, status: 'ALREADY_COMPLETED', name: profile?.name };
             }
         } else {
             // 4. No record -> Check In
-            const { error: insertError } = await supabase
+            const { error: insertError } = await supabaseAdmin
                 .from('attendance')
                 .insert({
-                    user_id: user.id,
+                    user_id: userId,
                     check_in_time: new Date().toISOString(),
                     date: today
                 });
 
             if (insertError) throw insertError;
 
-            const { data: profile } = await supabase.from('users').select('name').eq('id', user.id).single();
+            const { data: profile } = await supabaseAdmin.from('members').select('name').eq('id', userId).single();
             return {
                 success: true,
                 status: 'CHECK_IN',
@@ -104,30 +96,19 @@ export async function markAttendance() {
 }
 
 export async function getTodaysLog() {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() { return cookieStore.getAll() },
-                setAll(cookiesToSet) { }
-            }
-        }
-    );
+    if (!supabaseAdmin) return [];
 
     // Admin check is handled by RLS on the table usually, or we can check role here.
     // Assuming RLS "Admins can view all" is set.
 
     const today = new Date().toISOString().split('T')[0];
 
-    const { data: logs, error } = await supabase
+    const { data: logs, error } = await supabaseAdmin
         .from('attendance')
         .select(`
             *,
-            users (
-                name,
-                photo
+            member:members (
+                name
             )
         `)
         .eq('date', today)
