@@ -51,12 +51,13 @@ export async function POST(req: Request) {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${openRouterKey}`,
+                "HTTP-Referer": "www.mfpgympnp.in", // Optional. Site URL for rankings on openrouter.ai.
+                "X-Title": "mfpgympnp", // Optional. Site title for rankings on openrouter.ai.
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                "model": "openai/gpt-oss-120b:free",
-                "messages": [{ "role": "user", "content": initialPrompt }],
-                "reasoning": { "enabled": true }
+                "model": "deepseek/deepseek-r1-0528:free",
+                "messages": [{ "role": "user", "content": initialPrompt }]
             })
         });
 
@@ -104,10 +105,12 @@ export async function POST(req: Request) {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${openRouterKey}`,
+                "HTTP-Referer": "www.mfpgympnp.in", // Optional. Site URL for rankings on openrouter.ai.
+                "X-Title": "mfpgympnp", // Optional. Site title for rankings on openrouter.ai.
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                "model": "openai/gpt-oss-120b:free",
+                "model": "deepseek/deepseek-r1-0528:free",
                 "messages": messages,
             })
         });

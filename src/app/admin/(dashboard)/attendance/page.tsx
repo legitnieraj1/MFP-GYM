@@ -61,13 +61,10 @@ export default async function AttendancePage() {
                             <div key={log.id} className="grid grid-cols-4 gap-4 p-4 items-center hover:bg-white/5 transition-colors">
                                 <div className="col-span-1 flex items-center gap-3">
                                     <div className="h-8 w-8 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden border border-zinc-700">
-                                        {log.users?.photo ? (
-                                            <img src={log.users.photo} alt={log.users.name} className="h-full w-full object-cover" />
-                                        ) : (
-                                            <User className="h-4 w-4 text-zinc-500" />
-                                        )}
+                                        {/* Members table currently doesn't have photo, use icon */}
+                                        <User className="h-4 w-4 text-zinc-500" />
                                     </div>
-                                    <span className="font-medium text-white">{log.users?.name || "Unknown User"}</span>
+                                    <span className="font-medium text-white">{log.member?.name || "Unknown User"}</span>
                                 </div>
                                 <div className="col-span-1 text-zinc-300 font-mono text-sm">
                                     {new Date(log.check_in_time).toLocaleTimeString("en-US", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: true })}

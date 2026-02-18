@@ -95,11 +95,51 @@ export async function markAttendance() {
     }
 }
 
+// Helper to auto-checkout sessions older than 3 hours
+export async function autoCheckoutOldSessions() {
+    if (!supabaseAdmin) return;
+
+    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000);
+    const today = new Date().toISOString().split('T')[0];
+
+    try {
+        // Find active sessions for today that started more than 3 hours ago
+        const { data: staleSessions, error: fetchError } = await supabaseAdmin
+            .from('attendance')
+            .select('id, check_in_time')
+            .eq('date', today)
+            .is('check_out_time', null)
+            .lt('check_in_time', threeHoursAgo.toISOString());
+
+        if (fetchError) {
+            console.error("Error fetching stale sessions:", fetchError);
+            return;
+        }
+
+        if (staleSessions && staleSessions.length > 0) {
+            console.log(`Auto-checking out ${staleSessions.length} stale sessions...`);
+
+            // Update each session
+            for (const session of staleSessions) {
+                const checkInTime = new Date(session.check_in_time);
+                const autoCheckOutTime = new Date(checkInTime.getTime() + 3 * 60 * 60 * 1000);
+
+                await supabaseAdmin
+                    .from('attendance')
+                    .update({ check_out_time: autoCheckOutTime.toISOString() })
+                    .eq('id', session.id);
+            }
+        }
+    } catch (error) {
+        console.error("Auto-checkout error:", error);
+    }
+}
+
 export async function getTodaysLog() {
     if (!supabaseAdmin) return [];
 
-    // Admin check is handled by RLS on the table usually, or we can check role here.
-    // Assuming RLS "Admins can view all" is set.
+    // Trigger auto-checkout maintenance
+    await autoCheckoutOldSessions();
 
     const today = new Date().toISOString().split('T')[0];
 

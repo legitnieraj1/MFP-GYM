@@ -113,10 +113,15 @@ export async function createMember(formData: FormData) {
     }
 }
 
+import { autoCheckoutOldSessions } from "./attendance";
+
 export async function getAttendance() {
     if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
 
     try {
+        // Ensure accurate stats by processing auto-checkouts first
+        await autoCheckoutOldSessions();
+
         const { data, error } = await supabaseAdmin
             .from("attendance")
             .select(`

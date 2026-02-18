@@ -16,8 +16,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "MFP GYM | Train Hard. Stay Strong.",
-  description: "The ultimate gym management system for peak performance.",
+  title: "MFP Gym Periyanaickenpalayam | Best Gym & Fitness Center",
+  description: "Join MFP Gym in Periyanaickenpalayam for top-tier fitness training. Best Gym & Fitness Center offering expert coaching, modern equipment, and personalized workout plans.",
 };
 
 export default function RootLayout({
