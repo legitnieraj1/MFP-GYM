@@ -59,6 +59,12 @@ export function Membership({ user }: { user?: any }) {
     const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
 
+    const handleWhatsApp = (message: string) => {
+        const phone = "918098834154"; // Gym Phone: 080988 34154
+        const encoded = encodeURIComponent(message);
+        window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
+    };
+
     const handleSubscribe = async (plan: string) => {
         try {
             setLoadingPlan(plan);
@@ -222,6 +228,147 @@ export function Membership({ user }: { user?: any }) {
                             </Card>
                         </motion.div>
                     ))}
+                </div>
+
+                {/* TRANSFORMATION & PERSONAL TRAINING PROGRAMS */}
+                <div className="mt-32 text-center mb-16 relative z-10">
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="text-4xl md:text-5xl font-heading font-bold text-white mb-4 uppercase"
+                    >
+                        TRANSFORMATION & <br className="md:hidden" /><span className="text-primary">PERSONAL TRAINING</span> PROGRAMS
+                    </motion.h2>
+                    <p className="text-muted-foreground">
+                        Result-driven coaching programs designed for serious transformations.
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto relative z-10">
+                    {/* Program 1 */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 }}
+                        whileHover={{ scale: 1.03 }}
+                    >
+                        <Card className="h-full flex flex-col relative border-white/10 overflow-hidden bg-black hover:border-primary/50 transition-colors">
+                            <CardHeader>
+                                <CardTitle className="text-2xl font-bold font-heading tracking-wider">Personal Training</CardTitle>
+                                <div className="mt-4 flex items-baseline">
+                                    <span className="text-4xl font-extrabold text-white">₹5,000</span>
+                                    <span className="ml-2 text-sm text-muted-foreground">/ month</span>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex-1">
+                                <ul className="space-y-3">
+                                    {["Dedicated personal trainer", "Customized workout plan", "Strength & stretching sessions", "Injury prevention focus", "Weekly progress tracking"].map((feature, i) => (
+                                        <li key={i} className="flex items-start">
+                                            <Check className="w-5 h-5 text-primary mr-2 shrink-0" />
+                                            <span className="text-sm text-gray-300">{feature}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </CardContent>
+                            <CardFooter>
+                                <Button
+                                    variant="outline"
+                                    className="w-full h-12 text-lg font-bold uppercase tracking-wider hover:border-primary hover:text-primary hover:bg-transparent"
+                                    onClick={() => handleWhatsApp("Hi! I'm interested in the Personal Training program (₹5,000/month). Please share more details.")}
+                                >
+                                    Enquire on WhatsApp
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </motion.div>
+
+                    {/* Program 2 */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2 }}
+                        whileHover={{ scale: 1.03 }}
+                        className="relative"
+                    >
+                        <div className="absolute -top-4 left-0 right-0 flex justify-center z-20">
+                            <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-primary/50">
+                                Most Chosen
+                            </span>
+                        </div>
+                        <Card className="h-full flex flex-col relative border-white/10 overflow-hidden bg-zinc-900 ring-2 ring-primary ring-offset-2 ring-offset-black">
+                            <CardHeader>
+                                <CardTitle className="text-2xl font-bold font-heading tracking-wider">60 Day Transformation</CardTitle>
+                                <div className="mt-4 flex items-baseline">
+                                    <span className="text-4xl font-extrabold text-white">₹9,000</span>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex-1">
+                                <ul className="space-y-3">
+                                    {["8-week structured program", "Fat loss & body recomposition", "Daily diet follow-up via WhatsApp", "Weekend weight check-ins", "Lifestyle & habit correction"].map((feature, i) => (
+                                        <li key={i} className="flex items-start">
+                                            <Check className="w-5 h-5 text-primary mr-2 shrink-0" />
+                                            <span className="text-sm text-gray-300">{feature}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </CardContent>
+                            <CardFooter>
+                                <Button
+                                    variant="premium"
+                                    className="w-full h-12 text-lg font-bold uppercase tracking-wider hover:border-primary hover:text-primary hover:bg-transparent"
+                                    onClick={() => handleWhatsApp("Hi! I'm ready to start my 60 Day Transformation (₹9,000). Let's go!")}
+                                >
+                                    Start Transformation
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </motion.div>
+
+                    {/* Program 3 */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.3 }}
+                        whileHover={{ scale: 1.03 }}
+                        className="relative"
+                    >
+                        <div className="absolute -top-4 left-0 right-0 flex justify-center z-20">
+                            <span className="bg-zinc-800 border border-white/10 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
+                                Elite Program
+                            </span>
+                        </div>
+                        <Card className="h-full flex flex-col relative border-white/10 overflow-hidden bg-black hover:border-primary/50 transition-colors">
+                            <CardHeader>
+                                <CardTitle className="text-2xl font-bold font-heading tracking-wider">120 Day Transformation</CardTitle>
+                                <div className="mt-4 flex items-baseline">
+                                    <span className="text-4xl font-extrabold text-white">₹15,000</span>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex-1">
+                                <ul className="space-y-3">
+                                    {["16-week structured coaching", "Dedicated personal trainer", "Customized diet & workout plan", "Targeted fat loss goals", "WhatsApp diet follow-ups", "Weekly weight tracking", "Supplement guidance", "Optional professional photoshoot"].map((feature, i) => (
+                                        <li key={i} className="flex items-start">
+                                            <Check className="w-5 h-5 text-primary mr-2 shrink-0" />
+                                            <span className="text-sm text-gray-300">{feature}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </CardContent>
+                            <CardFooter>
+                                <Button
+                                    variant="outline"
+                                    className="w-full h-12 text-lg font-bold uppercase tracking-wider hover:border-primary hover:text-primary hover:bg-transparent"
+                                    onClick={() => handleWhatsApp("Hi! I want to apply for the 120 Day Elite Transformation Program (₹15,000).")}
+                                >
+                                    Apply Now
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </motion.div>
                 </div>
             </div>
         </section>
