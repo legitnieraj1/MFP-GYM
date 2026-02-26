@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         }
 
         // Create Custom Session (unifies with User Auth)
-        const expiresAt = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day for admin
+        const expiresAt = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000); // 10 years for admin
         const sessionPayload = { userId: data.user.id, role: userData.role, expiresAt };
 
         // Use standard cookie setting
