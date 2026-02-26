@@ -43,25 +43,31 @@ export function Contact() {
                                 </div>
                             </a>
 
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-white/5 rounded-full text-primary">
+                            <a
+                                href="tel:08098834154"
+                                className="flex items-center gap-4 group cursor-pointer"
+                            >
+                                <div className="p-3 bg-white/5 rounded-full text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                                     <Phone className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-white">Phone</h4>
-                                    <p className="text-muted-foreground">080988 34154</p>
+                                    <h4 className="font-bold text-white group-hover:text-primary transition-colors">Phone</h4>
+                                    <p className="text-muted-foreground hover:text-white transition-colors">080988 34154</p>
                                 </div>
-                            </div>
+                            </a>
 
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-white/5 rounded-full text-primary">
+                            <a
+                                href="mailto:info@mfpgym.com"
+                                className="flex items-center gap-4 group cursor-pointer"
+                            >
+                                <div className="p-3 bg-white/5 rounded-full text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                                     <Mail className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-white">Email</h4>
-                                    <p className="text-muted-foreground">info@mfpgym.com</p>
+                                    <h4 className="font-bold text-white group-hover:text-primary transition-colors">Email</h4>
+                                    <p className="text-muted-foreground hover:text-white transition-colors">info@mfpgym.com</p>
                                 </div>
-                            </div>
+                            </a>
 
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-white/5 rounded-full text-primary">
