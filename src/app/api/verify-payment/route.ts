@@ -10,9 +10,9 @@ const PLAN_DURATIONS: Record<string, number> = {
 };
 
 const PLAN_PRICES: Record<string, number> = {
-    BASIC: 3000,
-    PRO: 4500,
-    ELITE: 6500,
+    BASIC: 3099,
+    PRO: 4699,
+    ELITE: 6699,
 };
 
 export async function POST(req: Request) {

@@ -41,8 +41,8 @@ export default function MembersLogPage() {
     });
 
     const calculatePlanFromAmount = (amount: number) => {
-        if (amount >= 5000) return "ELITE";
-        if (amount >= 3000) return "PRO";
+        if (amount >= 6000) return "ELITE";
+        if (amount >= 4000) return "PRO";
         return "BASIC";
     };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getMembers, createMember } from "@/app/actions/admin";
+import { getMembers, createMember, renewMembership, updateMember, getMemberDetails } from "@/app/actions/admin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,6 +21,14 @@ import {
     DialogFooter
 } from "@/components/ui/dialog";
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -30,6 +38,7 @@ import {
 import { Search, Plus, User as UserIcon, Loader2, MoreVertical, Bell } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { openWhatsAppReminder } from "@/utils/whatsapp";
 
 type Member = {
     id: string;
@@ -51,6 +60,65 @@ export default function MembersPage() {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const router = useRouter();
+
+    const [isRenewOpen, setIsRenewOpen] = useState(false);
+    const [isViewOpen, setIsViewOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+    const [memberDetails, setMemberDetails] = useState<any>(null);
+    const [actionLoading, setActionLoading] = useState(false);
+
+    const handleViewProfile = async (member: Member) => {
+        setSelectedMember(member);
+        setActionLoading(true);
+        setIsViewOpen(true);
+        const res = await getMemberDetails(member.id);
+        if (res.success) {
+            setMemberDetails(res.data);
+        } else {
+            alert(res.error);
+        }
+        setActionLoading(false);
+    };
+
+    const handleRenew = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!selectedMember) return;
+        setSubmitLoading(true);
+        const formData = new FormData(e.currentTarget);
+        const plan = formData.get("plan") as string;
+        const duration = Number(formData.get("duration"));
+
+        const res = await renewMembership(selectedMember.id, plan, duration);
+        if (res.success) {
+            setIsRenewOpen(false);
+            fetchMembers();
+            alert("Membership renewed successfully!");
+        } else {
+            alert(res.error);
+        }
+        setSubmitLoading(false);
+    };
+
+    const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!selectedMember) return;
+        setSubmitLoading(true);
+        const formData = new FormData(e.currentTarget);
+        const res = await updateMember(selectedMember.id, {
+            name: formData.get("name") as string,
+            phone: formData.get("phone") as string,
+            plan: formData.get("plan") as string
+        });
+        if (res.success) {
+            setIsEditOpen(false);
+            fetchMembers();
+            alert("Member updated successfully!");
+        } else {
+            alert(res.error);
+        }
+        setSubmitLoading(false);
+    };
 
     useEffect(() => {
         fetchMembers();
@@ -268,17 +336,177 @@ export default function MembersPage() {
                                 <TableCell className="text-zinc-300">
                                     {member.membership?.end_date ? new Date(member.membership.end_date).toLocaleDateString() : '-'}
                                 </TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-400 hover:text-white hover:bg-white/10">
-                                        <span className="sr-only">Open menu</span>
-                                        <MoreVertical className="h-4 w-4" />
-                                    </Button>
+                                <TableCell className="text-right flex items-center justify-end gap-2">
+                                    {(member.membership && (member.membership.status !== 'ACTIVE' || (member.membership.end_date && new Date(member.membership.end_date) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)))) && (
+                                        <Button
+                                            onClick={() => openWhatsAppReminder(member)}
+                                            disabled={!member.phone}
+                                            title={!member.phone ? "Phone number not available" : "Send Reminder via WhatsApp"}
+                                            size="sm"
+                                            className="bg-green-600 hover:bg-green-700 text-white h-8 text-xs font-medium"
+                                        >
+                                            Remind
+                                        </Button>
+                                    )}
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-400 hover:text-white hover:bg-white/10">
+                                                <span className="sr-only">Open menu</span>
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800 text-white">
+                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                            <DropdownMenuItem onClick={() => handleViewProfile(member)}>View Profile</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => { setSelectedMember(member); setIsEditOpen(true); }}>Edit Member</DropdownMenuItem>
+                                            <DropdownMenuSeparator className="bg-zinc-800" />
+                                            <DropdownMenuItem onClick={() => { setSelectedMember(member); setIsRenewOpen(true); }}>Renew Membership</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </div >
+
+            {/* View Profile Dialog */}
+            <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
+                <DialogContent className="bg-[#0A0A0A] border-zinc-800 text-white max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Member Profile</DialogTitle>
+                    </DialogHeader>
+                    {actionLoading || !memberDetails ? (
+                        <div className="py-8 flex justify-center"><Loader2 className="animate-spin text-zinc-500" /></div>
+                    ) : (
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-4 border-b border-zinc-800 pb-4">
+                                <div className="h-16 w-16 bg-zinc-800 rounded-full flex items-center justify-center">
+                                    <UserIcon className="h-8 w-8 text-zinc-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold">{memberDetails.name}</h3>
+                                    <p className="text-zinc-400">{memberDetails.mobile}</p>
+                                    <span className={`text-xs px-2 py-1 rounded-full ${new Date(memberDetails.membership_end) > new Date() ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                                        {new Date(memberDetails.membership_end) > new Date() ? 'ACTIVE' : 'EXPIRED'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-zinc-900 p-3 rounded-md border border-zinc-800">
+                                    <p className="text-xs text-zinc-500">Join Date</p>
+                                    <p className="font-medium">{new Date(memberDetails.membership_start).toLocaleDateString()}</p>
+                                </div>
+                                <div className="bg-zinc-900 p-3 rounded-md border border-zinc-800">
+                                    <p className="text-xs text-zinc-500">Expiry Date</p>
+                                    <p className="font-medium">{new Date(memberDetails.membership_end).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 className="font-semibold mb-2">Recent Payments <span className="text-xs text-zinc-500 font-normal">({memberDetails.payments?.length})</span></h4>
+                                {memberDetails.payments?.slice(0, 3).map((p: any) => (
+                                    <div key={p.id} className="text-sm flex justify-between py-1 border-b border-zinc-800/50">
+                                        <span>{new Date(p.created_at).toLocaleDateString()}</span>
+                                        <span className="font-medium flex gap-2"><span className="text-xs text-zinc-500 border rounded px-1">{p.plan}</span> Rs. {p.amount}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div>
+                                <h4 className="font-semibold mb-2">Recent Attendance <span className="text-xs text-zinc-500 font-normal">({memberDetails.recent_attendance?.length})</span></h4>
+                                {memberDetails.recent_attendance?.slice(0, 5).map((a: any) => (
+                                    <div key={a.id} className="text-sm flex justify-between py-1 border-b border-zinc-800/50">
+                                        <span>{new Date(a.check_in_time).toLocaleDateString()}</span>
+                                        <span className="text-zinc-400">{new Date(a.check_in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Renew Dialog */}
+            <Dialog open={isRenewOpen} onOpenChange={setIsRenewOpen}>
+                <DialogContent className="bg-[#0A0A0A] border-zinc-800 text-white">
+                    <DialogHeader>
+                        <DialogTitle>Renew Membership</DialogTitle>
+                        <p className="text-sm text-zinc-400">Renewing for {selectedMember?.name}</p>
+                    </DialogHeader>
+                    <form onSubmit={handleRenew} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Plan</Label>
+                            <Select name="plan" defaultValue="BASIC">
+                                <SelectTrigger className="bg-zinc-900 border-zinc-800">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                                    <SelectItem value="BASIC">BASIC</SelectItem>
+                                    <SelectItem value="PRO">PRO</SelectItem>
+                                    <SelectItem value="ELITE">ELITE</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Duration (Months)</Label>
+                            <Select name="duration" defaultValue="3">
+                                <SelectTrigger className="bg-zinc-900 border-zinc-800">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                                    <SelectItem value="1">1 Month</SelectItem>
+                                    <SelectItem value="3">3 Months</SelectItem>
+                                    <SelectItem value="6">6 Months</SelectItem>
+                                    <SelectItem value="12">12 Months</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <DialogFooter>
+                            <Button type="submit" disabled={submitLoading} className="w-full bg-[#E50914] hover:bg-[#E50914]/90 text-white">
+                                {submitLoading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : null} Renew
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Dialog */}
+            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                <DialogContent className="bg-[#0A0A0A] border-zinc-800 text-white">
+                    <DialogHeader>
+                        <DialogTitle>Edit Member</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleEdit} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Name</Label>
+                            <Input name="name" defaultValue={selectedMember?.name} required className="bg-zinc-900 border-zinc-800" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Phone</Label>
+                            <Input name="phone" defaultValue={selectedMember?.phone} required className="bg-zinc-900 border-zinc-800" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Plan (Label ONLY - docs not affect renewal)</Label>
+                            <Select name="plan" defaultValue={selectedMember?.membership?.plan || "BASIC"}>
+                                <SelectTrigger className="bg-zinc-900 border-zinc-800">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                                    <SelectItem value="BASIC">BASIC</SelectItem>
+                                    <SelectItem value="PRO">PRO</SelectItem>
+                                    <SelectItem value="ELITE">ELITE</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <DialogFooter>
+                            <Button type="submit" disabled={submitLoading} className="w-full bg-white text-black hover:bg-zinc-200">
+                                {submitLoading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : null} Save Changes
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div >
     );
 }

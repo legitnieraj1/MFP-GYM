@@ -11,7 +11,7 @@ import { createBrowserClient } from "@supabase/ssr";
 const plans = [
     {
         name: "BASIC",
-        price: "₹3,000",
+        price: "₹3,099",
         period: "/ quarter",
         description: "Pay 3 months, get 3 months free. Perfect for starters.",
         features: [
@@ -25,7 +25,7 @@ const plans = [
     },
     {
         name: "PRO",
-        price: "₹4,500",
+        price: "₹4,699",
         period: "/ half-year",
         description: "Pay 6 months, get 6 months free. Serious gains.",
         features: [
@@ -39,7 +39,7 @@ const plans = [
     },
     {
         name: "ELITE",
-        price: "₹6,500",
+        price: "₹6,699",
         period: "/ year",
         description: "Pay 1 year, get 1 year free. Total transformation.",
         features: [

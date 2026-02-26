@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMembers, getAttendance, getPayments } from "@/app/actions/admin";
 
 import { useRouter } from "next/navigation";
+import { openWhatsAppReminder } from "@/utils/whatsapp";
 
 export default function AdminDashboard() {
     const router = useRouter();
@@ -253,7 +254,12 @@ export default function AdminDashboard() {
                                                     <div className="text-xs text-red-400">Expires in {daysLeft} days</div>
                                                 </div>
                                             </div>
-                                            <button className="text-xs bg-white/5 hover:bg-white/10 px-2 py-1 rounded text-white transition-colors">
+                                            <button
+                                                onClick={() => openWhatsAppReminder(member)}
+                                                disabled={!member.phone}
+                                                title={!member.phone ? "Phone number not available" : "Send Reminder via WhatsApp"}
+                                                className="text-xs bg-green-600/20 hover:bg-green-600/40 text-green-500 hover:text-green-400 px-3 py-1.5 rounded transition-colors border border-green-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
                                                 Remind
                                             </button>
                                         </div>

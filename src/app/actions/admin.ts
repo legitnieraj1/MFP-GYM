@@ -113,6 +113,117 @@ export async function createMember(formData: FormData) {
     }
 }
 
+export async function renewMembership(memberId: string, plan: string, durationMonths: number) {
+    if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
+
+    try {
+        // Fetch current member
+        const { data: member, error: fetchErr } = await supabaseAdmin
+            .from("members")
+            .select("membership_end")
+            .eq("id", memberId)
+            .single();
+
+        if (fetchErr || !member) throw new Error("Member not found");
+
+        const now = new Date();
+        const currentEnd = member.membership_end ? new Date(member.membership_end) : new Date(0);
+
+        // If expired, start from today. If active, extend from current end date.
+        let newStartDate = currentEnd > now ? currentEnd : now;
+        let newEndDate = new Date(newStartDate);
+        newEndDate.setMonth(newStartDate.getMonth() + durationMonths);
+
+        const { error: updateErr } = await supabaseAdmin
+            .from("members")
+            .update({
+                membership_start: newStartDate.toISOString(),
+                membership_end: newEndDate.toISOString()
+            })
+            .eq("id", memberId);
+
+        if (updateErr) throw updateErr;
+
+        // Optionally record a direct backend payment entry for internal renewals:
+        await supabaseAdmin.from("member_payments").insert({
+            member_id: memberId,
+            amount: 0, // Admin manual renewal
+            plan: plan,
+            razorpay_order_id: "manual",
+            status: "SUCCESS"
+        });
+
+        revalidatePath("/admin/members");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Failed to renew membership:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function updateMember(memberId: string, data: { name: string, phone: string, plan: string }) {
+    if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
+
+    try {
+        const formattedMobile = formatMobile(data.phone);
+
+        const { error } = await supabaseAdmin
+            .from("members")
+            .update({
+                name: data.name,
+                mobile: formattedMobile
+            })
+            .eq("id", memberId);
+
+        if (error) throw error;
+
+        revalidatePath("/admin/members");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Failed to update member:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getMemberDetails(memberId: string) {
+    if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
+
+    try {
+        const { data: member, error: memberErr } = await supabaseAdmin
+            .from("members")
+            .select("*")
+            .eq("id", memberId)
+            .single();
+
+        if (memberErr || !member) throw memberErr || new Error("Member not found");
+
+        const { data: attendance } = await supabaseAdmin
+            .from("attendance")
+            .select("*")
+            .eq("member_id", memberId)
+            .order("check_in_time", { ascending: false })
+            .limit(30);
+
+        const { data: payments } = await supabaseAdmin
+            .from("member_payments")
+            .select("*")
+            .eq("member_id", memberId)
+            .order("created_at", { ascending: false });
+
+        return {
+            success: true,
+            data: {
+                ...member,
+                recent_attendance: attendance || [],
+                payments: payments || []
+            }
+        };
+    } catch (error: any) {
+        console.error("Failed to get member details:", error);
+        return { success: false, error: error.message };
+    }
+}
+
 import { autoCheckoutOldSessions } from "./attendance";
 
 export async function getAttendance() {
