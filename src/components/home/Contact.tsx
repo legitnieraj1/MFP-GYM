@@ -28,15 +28,20 @@ export function Contact() {
                         </div>
 
                         <div className="space-y-6">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-white/5 rounded-full text-primary">
+                            <a
+                                href="https://maps.google.com/?q=TEAM+MFP+Periyanaickenpalayam"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-4 group cursor-pointer"
+                            >
+                                <div className="p-3 bg-white/5 rounded-full text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                                     <MapPin className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-white">Location</h4>
+                                    <h4 className="font-bold text-white group-hover:text-primary transition-colors">Location</h4>
                                     <p className="text-muted-foreground">No 17, Bhagat Singh Nagar, Periyanaickenpalayam, Tamil Nadu 641020</p>
                                 </div>
-                            </div>
+                            </a>
 
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-white/5 rounded-full text-primary">
@@ -115,34 +120,7 @@ export function Contact() {
                         viewport={{ once: true }}
                         className="space-y-8"
                     >
-                        <form className="space-y-4 p-8 bg-zinc-900/50 border border-white/5 rounded-xl">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-white">Name</label>
-                                    <Input placeholder="John Doe" className="bg-black/50 border-white/10" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-white">Phone</label>
-                                    <Input placeholder="+91 ..." className="bg-black/50 border-white/10" />
-                                </div>
-                            </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-white">Email</label>
-                                <Input type="email" placeholder="john@example.com" className="bg-black/50 border-white/10" />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-white">Message</label>
-                                {/* Placeholder textarea for now as I haven't created the component yet */}
-                                <textarea
-                                    className="flex min-h-[120px] w-full rounded-md border border-white/10 bg-black/50 px-3 py-2 text-sm text-white placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder="I want to join..."
-                                />
-                            </div>
-
-                            <Button className="w-full font-bold" variant="premium">SEND MESSAGE</Button>
-                        </form>
 
                         {/* Google Maps Embed */}
                         <div className="w-full h-64 rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-500 border border-white/10">
