@@ -177,7 +177,7 @@ export default function DietAIPage() {
                             <div className="space-y-2">
                                 <Label>Dietary Preferences</Label>
                                 <Input
-                                    placeholder="e.g. Non-Veg, Vegetarian"
+                                    placeholder="Enter diet preference"
                                     value={stats.dietType}
                                     onChange={(e) => handleChange("dietType", e.target.value)}
                                     className="bg-zinc-950 border-zinc-800"

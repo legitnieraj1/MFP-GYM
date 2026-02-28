@@ -184,7 +184,7 @@ export default function MembersLogPage() {
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         className="bg-zinc-900 border-zinc-800 text-white"
-                                        placeholder="e.g. Rahul Sharma"
+                                        placeholder="Enter member name"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -193,7 +193,7 @@ export default function MembersLogPage() {
                                         value={formData.enrollment_number || ""}
                                         onChange={(e) => setFormData({ ...formData, enrollment_number: e.target.value })}
                                         className="bg-zinc-900 border-zinc-800 text-white"
-                                        placeholder="e.g. 101"
+                                        placeholder="Enter enroll number"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -203,7 +203,7 @@ export default function MembersLogPage() {
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                         className="bg-zinc-900 border-zinc-800 text-white"
-                                        placeholder="+91..."
+                                        placeholder="Enter member number"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -248,7 +248,7 @@ export default function MembersLogPage() {
                                         value={formData.amount}
                                         onChange={handleAmountChange}
                                         className="bg-zinc-900 border-zinc-800 text-white"
-                                        placeholder="e.g. 1500"
+                                        placeholder="Enter amount"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -286,7 +286,7 @@ export default function MembersLogPage() {
                                     value={formData.address}
                                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                     className="bg-zinc-900 border-zinc-800 text-white"
-                                    placeholder="Residential Address"
+                                    placeholder="Enter address"
                                 />
                             </div>
 

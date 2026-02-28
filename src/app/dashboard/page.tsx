@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { User, CreditCard, Apple, Calendar, Phone, Shield } from "lucide-react";
+import { EditProfileDialog } from "@/components/dashboard/EditProfileDialog";
 
 export default async function DashboardPage() {
     const session = await getSession();
@@ -58,24 +59,54 @@ export default async function DashboardPage() {
                     <Card className="bg-zinc-900 border-zinc-800">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-xl font-bold text-white">Profile</CardTitle>
-                            <User className="h-5 w-5 text-[#E50914]" />
+                            <div className="flex items-center gap-2">
+                                <EditProfileDialog memberProfile={memberProfile} />
+                                <User className="h-5 w-5 text-[#E50914]" />
+                            </div>
                         </CardHeader>
                         <CardContent>
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="h-16 w-16 bg-zinc-800 rounded-full flex items-center justify-center overflow-hidden border border-white/10">
+                                    {memberProfile.photo_url ? (
+                                        <img src={memberProfile.photo_url} alt={memberProfile.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                        <User className="h-8 w-8 text-zinc-500" />
+                                    )}
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg text-white">{memberProfile.name}</h3>
+                                    <p className="text-zinc-400 text-sm">{memberProfile.mobile}</p>
+                                </div>
+                            </div>
                             <div className="space-y-3 text-sm text-gray-300">
                                 <div className="flex justify-between">
                                     <span>Name:</span>
                                     <span className="font-medium text-white">{memberProfile.name}</span>
                                 </div>
+                                {memberProfile.dob && (
+                                    <div className="flex justify-between">
+                                        <span>Date of Birth:</span>
+                                        <span className="font-medium text-white">{new Date(memberProfile.dob).toLocaleDateString()}</span>
+                                    </div>
+                                )}
                                 {memberProfile.age && (
                                     <div className="flex justify-between">
                                         <span>Age:</span>
                                         <span className="font-medium text-white">{memberProfile.age}</span>
                                     </div>
                                 )}
-                                <div className="flex justify-between">
-                                    <span>Mobile:</span>
-                                    <span className="font-medium text-white">{memberProfile.mobile}</span>
-                                </div>
+                                {memberProfile.weight && (
+                                    <div className="flex justify-between">
+                                        <span>Weight:</span>
+                                        <span className="font-medium text-white">{memberProfile.weight} kg</span>
+                                    </div>
+                                )}
+                                {memberProfile.height && (
+                                    <div className="flex justify-between">
+                                        <span>Height:</span>
+                                        <span className="font-medium text-white">{memberProfile.height} cm</span>
+                                    </div>
+                                )}
                                 {memberProfile.enroll_no && (
                                     <div className="flex justify-between">
                                         <span>Enroll No:</span>

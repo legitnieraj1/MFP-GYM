@@ -105,11 +105,7 @@ export default function MembersPage() {
         if (!selectedMember) return;
         setSubmitLoading(true);
         const formData = new FormData(e.currentTarget);
-        const res = await updateMember(selectedMember.id, {
-            name: formData.get("name") as string,
-            phone: formData.get("phone") as string,
-            plan: formData.get("plan") as string
-        });
+        const res = await updateMember(selectedMember.id, formData);
         if (res.success) {
             setIsEditOpen(false);
             fetchMembers();
@@ -178,16 +174,16 @@ export default function MembersPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Full Name</Label>
-                                    <Input name="name" placeholder="John Doe" required className="bg-zinc-900 border-zinc-800" />
+                                    <Input name="name" placeholder="Enter member name" required className="bg-zinc-900 border-zinc-800" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Phone (WhatsApp)</Label>
-                                    <Input name="phone" placeholder="+91 98765 43210" required className="bg-zinc-900 border-zinc-800" />
+                                    <Input name="phone" placeholder="Enter mobile number" required className="bg-zinc-900 border-zinc-800" />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>Email (Optional)</Label>
-                                <Input name="email" type="email" placeholder="john@example.com" className="bg-zinc-900 border-zinc-800" />
+                                <Input name="email" type="email" placeholder="Enter email address" className="bg-zinc-900 border-zinc-800" />
                             </div>
 
                             {/* Photo Upload */}
@@ -205,24 +201,25 @@ export default function MembersPage() {
                                 <p className="text-xs text-zinc-500">Upload from gallery or take a picture.</p>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Age</Label>
-                                    <Input name="age" type="number" required className="bg-zinc-900 border-zinc-800" />
+                                    <Label>Age (Optional)</Label>
+                                    <Input name="age" type="number" placeholder="Enter age" className="bg-zinc-900 border-zinc-800" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Date of Birth</Label>
+                                    <Input name="dob" type="date" className="bg-zinc-900 border-zinc-800" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Weight (kg)</Label>
-                                    <Input name="weight" type="number" step="0.1" required className="bg-zinc-900 border-zinc-800" />
+                                    <Input name="weight" type="number" step="0.1" required placeholder="Enter weight in kg" className="bg-zinc-900 border-zinc-800" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Height (cm)</Label>
-                                    <Input name="height" type="number" required className="bg-zinc-900 border-zinc-800" />
+                                    <Input name="height" type="number" required placeholder="Enter height in cm" className="bg-zinc-900 border-zinc-800" />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label>Address</Label>
-                                <Input name="address" placeholder="Residential Address" className="bg-zinc-900 border-zinc-800" />
-                            </div>
+                            {/* Address removed as per request */}
                             <div className="space-y-2">
                                 <Label>Membership Plan</Label>
                                 <Select name="plan" defaultValue="BASIC">
@@ -230,6 +227,7 @@ export default function MembersPage() {
                                         <SelectValue placeholder="Select Plan" />
                                     </SelectTrigger>
                                     <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                                        <SelectItem value="BASIC_1M">BASIC (1 Month)</SelectItem>
                                         <SelectItem value="BASIC">BASIC (Quarterly)</SelectItem>
                                         <SelectItem value="PRO">PRO (Half-Yearly)</SelectItem>
                                         <SelectItem value="ELITE">ELITE (Yearly)</SelectItem>
@@ -381,8 +379,12 @@ export default function MembersPage() {
                     ) : (
                         <div className="space-y-6">
                             <div className="flex items-center gap-4 border-b border-zinc-800 pb-4">
-                                <div className="h-16 w-16 bg-zinc-800 rounded-full flex items-center justify-center">
-                                    <UserIcon className="h-8 w-8 text-zinc-500" />
+                                <div className="h-16 w-16 bg-zinc-800 rounded-full flex items-center justify-center overflow-hidden border border-white/10">
+                                    {memberDetails.photo_url ? (
+                                        <img src={memberDetails.photo_url} alt={memberDetails.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                        <UserIcon className="h-8 w-8 text-zinc-500" />
+                                    )}
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold">{memberDetails.name}</h3>
@@ -393,7 +395,11 @@ export default function MembersPage() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="bg-zinc-900 p-3 rounded-md border border-zinc-800">
+                                    <p className="text-xs text-zinc-500">Date of Birth</p>
+                                    <p className="font-medium">{memberDetails.dob ? new Date(memberDetails.dob).toLocaleDateString() : 'N/A'}</p>
+                                </div>
                                 <div className="bg-zinc-900 p-3 rounded-md border border-zinc-800">
                                     <p className="text-xs text-zinc-500">Join Date</p>
                                     <p className="font-medium">{new Date(memberDetails.membership_start).toLocaleDateString()}</p>
@@ -442,6 +448,7 @@ export default function MembersPage() {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                                    <SelectItem value="BASIC_1M">BASIC (1 Month)</SelectItem>
                                     <SelectItem value="BASIC">BASIC</SelectItem>
                                     <SelectItem value="PRO">PRO</SelectItem>
                                     <SelectItem value="ELITE">ELITE</SelectItem>
@@ -478,13 +485,48 @@ export default function MembersPage() {
                         <DialogTitle>Edit Member</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleEdit} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label>Name</Label>
-                            <Input name="name" defaultValue={selectedMember?.name} required className="bg-zinc-900 border-zinc-800" />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Name</Label>
+                                <Input name="name" defaultValue={selectedMember?.name} required className="bg-zinc-900 border-zinc-800" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Phone</Label>
+                                <Input name="phone" defaultValue={selectedMember?.phone} required className="bg-zinc-900 border-zinc-800" />
+                            </div>
                         </div>
+
                         <div className="space-y-2">
-                            <Label>Phone</Label>
-                            <Input name="phone" defaultValue={selectedMember?.phone} required className="bg-zinc-900 border-zinc-800" />
+                            <Label>Member Photo</Label>
+                            <div className="flex items-center gap-4">
+                                <Input
+                                    type="file"
+                                    name="photo"
+                                    accept="image/*"
+                                    capture="environment"
+                                    className="bg-zinc-900 border-zinc-800 file:bg-[#E50914] file:text-white file:border-0 file:rounded-sm file:px-2 file:mr-4"
+                                />
+                            </div>
+                            <p className="text-xs text-zinc-500">Upload new photo (leaves existing if empty).</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Age (Optional)</Label>
+                                <Input name="age" type="number" defaultValue={(selectedMember as any)?.age || ""} placeholder="Enter age" className="bg-zinc-900 border-zinc-800" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Date of Birth</Label>
+                                <Input name="dob" type="date" defaultValue={(selectedMember as any)?.dob || ""} className="bg-zinc-900 border-zinc-800" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Weight (kg)</Label>
+                                <Input name="weight" type="number" step="0.1" defaultValue={(selectedMember as any)?.weight || ""} placeholder="Enter weight in kg" className="bg-zinc-900 border-zinc-800" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Height (cm)</Label>
+                                <Input name="height" type="number" defaultValue={(selectedMember as any)?.height || ""} placeholder="Enter height in cm" className="bg-zinc-900 border-zinc-800" />
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <Label>Plan (Label ONLY - docs not affect renewal)</Label>
@@ -493,6 +535,7 @@ export default function MembersPage() {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                                    <SelectItem value="BASIC_1M">BASIC (1 Month)</SelectItem>
                                     <SelectItem value="BASIC">BASIC</SelectItem>
                                     <SelectItem value="PRO">PRO</SelectItem>
                                     <SelectItem value="ELITE">ELITE</SelectItem>

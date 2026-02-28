@@ -81,7 +81,7 @@ export default function AdminLoginPage() {
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                             <Input
                                 type="email"
-                                placeholder="admin@mfpgym.com"
+                                placeholder="Enter your email"
                                 className="pl-10 bg-black/50 border-white/10 text-white focus:border-[#E50914] focus:ring-[#E50914]/20 h-12"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -99,7 +99,7 @@ export default function AdminLoginPage() {
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                             <Input
                                 type="password"
-                                placeholder="••••••••"
+                                placeholder="Enter your password"
                                 className="pl-10 bg-black/50 border-white/10 text-white focus:border-[#E50914] focus:ring-[#E50914]/20 h-12"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}

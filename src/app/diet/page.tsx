@@ -134,16 +134,16 @@ export default function DietPage() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-sm text-gray-400">Weight (kg)</label>
-                                            <Input name="weight" type="number" required placeholder="70" className="bg-black/50 border-zinc-700" onChange={handleChange} />
+                                            <Input name="weight" type="number" required placeholder="Enter weight in kg" className="bg-black/50 border-zinc-700" onChange={handleChange} />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-sm text-gray-400">Height (cm)</label>
-                                            <Input name="height" type="number" required placeholder="175" className="bg-black/50 border-zinc-700" onChange={handleChange} />
+                                            <Input name="height" type="number" required placeholder="Enter height in cm" className="bg-black/50 border-zinc-700" onChange={handleChange} />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm text-gray-400">Age</label>
-                                        <Input name="age" type="number" required placeholder="25" className="bg-black/50 border-zinc-700" onChange={handleChange} />
+                                        <Input name="age" type="number" required placeholder="Enter your age" className="bg-black/50 border-zinc-700" onChange={handleChange} />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm text-gray-400">Goal</label>

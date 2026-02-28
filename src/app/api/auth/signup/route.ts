@@ -5,7 +5,8 @@ import { supabaseAdmin, supabase } from "@/lib/supabase";
 
 const signupSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
-    age: z.coerce.number().min(5, "Age must be at least 5").max(100, "Age must be under 100"),
+    age: z.coerce.number().min(5, "Age must be at least 5").max(100, "Age must be under 100").optional(),
+    dob: z.string().optional(),
     mobile: z.string().length(10, "Mobile must be 10 digits").regex(/^\d+$/, "Mobile must contain request only numbers"),
     pin: z.string().length(4, "PIN must be 4 digits").regex(/^\d+$/, "PIN must contain only numbers"),
 });
@@ -13,7 +14,7 @@ const signupSchema = z.object({
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { name, age, mobile, pin } = signupSchema.parse(body);
+        const { name, age, dob, mobile, pin } = signupSchema.parse(body);
 
         const formattedMobile = formatMobile(mobile);
         const hashedPin = await hashPin(pin);
@@ -41,6 +42,7 @@ export async function POST(req: Request) {
             .insert({
                 name,
                 age,
+                dob: dob || null,
                 mobile: formattedMobile,
                 pin_hash: hashedPin,
             })

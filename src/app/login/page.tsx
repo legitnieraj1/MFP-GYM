@@ -82,7 +82,7 @@ export default function LoginPage() {
                                     <Input
                                         id="mobile"
                                         name="mobile"
-                                        placeholder="9876543210"
+                                        placeholder="Enter your number"
                                         type="tel"
                                         value={formData.mobile}
                                         onChange={handleChange}
@@ -98,7 +98,7 @@ export default function LoginPage() {
                                     <Input
                                         id="pin"
                                         name="pin"
-                                        placeholder="Enter PIN"
+                                        placeholder="Enter your PIN"
                                         type="password"
                                         value={formData.pin}
                                         onChange={handleChange}

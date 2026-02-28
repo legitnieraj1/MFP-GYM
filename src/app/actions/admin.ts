@@ -3,6 +3,7 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 import { hashPin, formatMobile } from "@/lib/auth";
+import crypto from "crypto";
 
 // Helper to check admin role
 async function checkAdminRole(userId: string) {
@@ -39,6 +40,8 @@ export async function getMembers() {
                 const days = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
                 if (days > 300) plan = "ELITE";
                 else if (days > 150) plan = "PRO";
+                else if (days > 60) plan = "BASIC";
+                else plan = "BASIC_1M";
             }
 
             return {
@@ -46,7 +49,7 @@ export async function getMembers() {
                 name: member.name,
                 email: "", // Not available in members table
                 phone: member.mobile,
-                photo: null, // Not available in members table
+                photo: member.photo_url || null, // Getting photo from table
                 membership: member.membership_end ? {
                     plan: plan,
                     status: isActive ? "ACTIVE" : "EXPIRED",
@@ -70,7 +73,29 @@ export async function createMember(formData: FormData) {
         // const email = formData.get("email") as string; // Optional/Unused in members table
         const phone = formData.get("phone") as string;
         const plan = formData.get("plan") as string;
-        // const photoFile = formData.get("photo") as File | null; // Not storing photo in members table yet
+
+        const age = formData.get("age") ? Number(formData.get("age")) : null;
+        const weight = formData.get("weight") ? Number(formData.get("weight")) : null;
+        const height = formData.get("height") ? Number(formData.get("height")) : null;
+        const photoFile = formData.get("photo") as File | null;
+
+        let photo_url = null;
+        if (photoFile && photoFile.size > 0) {
+            const fileExt = photoFile.name.split('.').pop();
+            const fileName = `${crypto.randomUUID()}.${fileExt}`;
+            const { error: uploadError } = await supabaseAdmin.storage
+                .from("member-photos")
+                .upload(fileName, photoFile);
+
+            if (!uploadError) {
+                const { data: { publicUrl } } = supabaseAdmin.storage
+                    .from("member-photos")
+                    .getPublicUrl(fileName);
+                photo_url = publicUrl;
+            } else {
+                console.error("Photo upload error:", uploadError);
+            }
+        }
 
         const formattedMobile = formatMobile(phone);
         const pin = phone.slice(-4); // Default PIN is last 4 digits
@@ -81,7 +106,9 @@ export async function createMember(formData: FormData) {
         const startDate = joinDateStr ? new Date(joinDateStr) : new Date();
         const endDate = new Date(startDate);
 
-        if (plan === "BASIC") {
+        if (plan === "BASIC_1M") {
+            endDate.setMonth(startDate.getMonth() + 1);
+        } else if (plan === "BASIC") {
             endDate.setMonth(startDate.getMonth() + 3);
         } else if (plan === "PRO") {
             endDate.setMonth(startDate.getMonth() + 6);
@@ -98,7 +125,11 @@ export async function createMember(formData: FormData) {
                 pin_hash: pinHash,
                 membership_start: startDate.toISOString(),
                 membership_end: endDate.toISOString(),
-                legacy_member: false
+                legacy_member: false,
+                age,
+                weight,
+                height,
+                photo_url
             });
 
 
@@ -161,18 +192,49 @@ export async function renewMembership(memberId: string, plan: string, durationMo
     }
 }
 
-export async function updateMember(memberId: string, data: { name: string, phone: string, plan: string }) {
+export async function updateMember(memberId: string, formData: FormData) {
     if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
 
     try {
-        const formattedMobile = formatMobile(data.phone);
+        const name = formData.get("name") as string;
+        const phone = formData.get("phone") as string;
+        const age = formData.get("age") ? Number(formData.get("age")) : null;
+        const weight = formData.get("weight") ? Number(formData.get("weight")) : null;
+        const height = formData.get("height") ? Number(formData.get("height")) : null;
+        const dob = formData.get("dob") as string | null;
+        const photoFile = formData.get("photo") as File | null;
+
+        const formattedMobile = formatMobile(phone);
+
+        const updateData: any = {
+            name,
+            mobile: formattedMobile,
+            age,
+            weight,
+            height,
+            dob
+        };
+
+        if (photoFile && photoFile.size > 0) {
+            const fileExt = photoFile.name.split('.').pop();
+            const fileName = `${crypto.randomUUID()}.${fileExt}`;
+            const { error: uploadError } = await supabaseAdmin.storage
+                .from("member-photos")
+                .upload(fileName, photoFile);
+
+            if (!uploadError) {
+                const { data: { publicUrl } } = supabaseAdmin.storage
+                    .from("member-photos")
+                    .getPublicUrl(fileName);
+                updateData.photo_url = publicUrl;
+            } else {
+                console.error("Photo upload error:", uploadError);
+            }
+        }
 
         const { error } = await supabaseAdmin
             .from("members")
-            .update({
-                name: data.name,
-                mobile: formattedMobile
-            })
+            .update(updateData)
             .eq("id", memberId);
 
         if (error) throw error;

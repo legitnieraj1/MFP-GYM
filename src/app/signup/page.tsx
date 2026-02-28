@@ -49,7 +49,8 @@ export default function SignupPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     name: formData.name,
-                    age: formData.age,
+                    age: formData.age || undefined,
+                    dob: (formData as any).dob || undefined,
                     mobile: formData.mobile,
                     pin: formData.pin
                 }),
@@ -104,7 +105,7 @@ export default function SignupPage() {
                                         <Input
                                             id="name"
                                             name="name"
-                                            placeholder="John Doe"
+                                            placeholder="Enter your name"
                                             value={formData.name}
                                             onChange={handleChange}
                                             required
@@ -112,21 +113,34 @@ export default function SignupPage() {
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-2 col-span-2 sm:col-span-1">
-                                    <Label htmlFor="age" className="text-zinc-200">Age</Label>
+                                <div className="space-y-2 col-span-2 md:col-span-1">
+                                    <Label htmlFor="age" className="text-zinc-200">Age (Optional)</Label>
                                     <div className="relative">
                                         <Calendar className="absolute left-3 top-3 h-4 w-4 text-zinc-500" />
                                         <Input
                                             id="age"
                                             name="age"
-                                            placeholder="25"
+                                            placeholder="Enter your age"
                                             type="number"
-                                            min="10"
+                                            min="5"
                                             max="99"
                                             value={formData.age}
                                             onChange={handleChange}
-                                            required
                                             className="pl-10 bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-600 focus:ring-red-600 focus:border-red-600"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2 col-span-2 md:col-span-1">
+                                    <Label htmlFor="dob" className="text-zinc-200">Date of Birth</Label>
+                                    <div className="relative">
+                                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-zinc-500" />
+                                        <Input
+                                            id="dob"
+                                            name="dob"
+                                            type="date"
+                                            value={(formData as any).dob || ""}
+                                            onChange={handleChange}
+                                            className="pl-10 bg-zinc-950 border-zinc-800 text-white focus:ring-red-600 focus:border-red-600"
                                         />
                                     </div>
                                 </div>
@@ -139,7 +153,7 @@ export default function SignupPage() {
                                     <Input
                                         id="mobile"
                                         name="mobile"
-                                        placeholder="9876543210"
+                                        placeholder="Enter your number"
                                         type="tel"
                                         value={formData.mobile}
                                         onChange={handleChange}
@@ -157,7 +171,7 @@ export default function SignupPage() {
                                         <Input
                                             id="pin"
                                             name="pin"
-                                            placeholder="••••"
+                                            placeholder="Enter your PIN"
                                             type="password"
                                             maxLength={4}
                                             value={formData.pin}
@@ -174,7 +188,7 @@ export default function SignupPage() {
                                         <Input
                                             id="confirmPin"
                                             name="confirmPin"
-                                            placeholder="••••"
+                                            placeholder="Confirm your PIN"
                                             type="password"
                                             maxLength={4}
                                             value={formData.confirmPin}

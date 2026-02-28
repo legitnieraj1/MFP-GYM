@@ -51,13 +51,14 @@ export async function POST(req: Request) {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${openRouterKey}`,
-                "HTTP-Referer": "www.mfpgympnp.in", // Optional. Site URL for rankings on openrouter.ai.
-                "X-Title": "mfpgympnp", // Optional. Site title for rankings on openrouter.ai.
                 "Content-Type": "application/json",
+                "HTTP-Referer": "www.mfpgympnp.in",
+                "X-Title": "mfpgympnp"
             },
             body: JSON.stringify({
-                "model": "deepseek/deepseek-r1-0528:free",
-                "messages": [{ "role": "user", "content": initialPrompt }]
+                "model": "arcee-ai/trinity-large-preview:free",
+                "messages": [{ "role": "user", "content": initialPrompt }],
+                "reasoning": { "enabled": true }
             })
         });
 
@@ -105,12 +106,12 @@ export async function POST(req: Request) {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${openRouterKey}`,
-                "HTTP-Referer": "www.mfpgympnp.in", // Optional. Site URL for rankings on openrouter.ai.
-                "X-Title": "mfpgympnp", // Optional. Site title for rankings on openrouter.ai.
                 "Content-Type": "application/json",
+                "HTTP-Referer": "www.mfpgympnp.in",
+                "X-Title": "mfpgympnp"
             },
             body: JSON.stringify({
-                "model": "deepseek/deepseek-r1-0528:free",
+                "model": "arcee-ai/trinity-large-preview:free",
                 "messages": messages,
             })
         });

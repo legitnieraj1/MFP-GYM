@@ -56,12 +56,12 @@ export default function NotificationsPage() {
                         </div>
                         <div className="space-y-2">
                             <Label>Subject / Template Header</Label>
-                            <Input placeholder="Gym Maintenance Alert" className="bg-zinc-950 border-zinc-800" />
+                            <Input placeholder="Enter notification title" className="bg-zinc-950 border-zinc-800" />
                         </div>
                         <div className="space-y-2">
                             <Label>Message Body</Label>
                             <Textarea
-                                placeholder="Dear members, please note that the gym will be closed on..."
+                                placeholder="Enter notification message"
                                 className="bg-zinc-950 border-zinc-800 min-h-[150px]"
                             />
                         </div>

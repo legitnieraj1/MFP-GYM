@@ -86,19 +86,19 @@ export default function TrainersPage() {
                         <form onSubmit={handleCreate} className="space-y-4 py-4">
                             <div className="space-y-2">
                                 <Label>Full Name</Label>
-                                <Input name="name" required className="bg-zinc-900 border-zinc-800" placeholder="e.g. Mike Tyson" />
+                                <Input name="name" required className="bg-zinc-900 border-zinc-800" placeholder="Enter trainer name" />
                             </div>
                             <div className="space-y-2">
                                 <Label>Specialty</Label>
-                                <Input name="specialty" required className="bg-zinc-900 border-zinc-800" placeholder="e.g. Boxing, HIIT" />
+                                <Input name="specialty" required className="bg-zinc-900 border-zinc-800" placeholder="Enter specialty" />
                             </div>
                             <div className="space-y-2">
                                 <Label>Experience</Label>
-                                <Input name="experience" required className="bg-zinc-900 border-zinc-800" placeholder="e.g. 5 Years" />
+                                <Input name="experience" required className="bg-zinc-900 border-zinc-800" placeholder="Enter experience" />
                             </div>
                             <div className="space-y-2">
                                 <Label>Image URL (Optional)</Label>
-                                <Input name="image_url" className="bg-zinc-900 border-zinc-800" placeholder="https://..." />
+                                <Input name="image_url" className="bg-zinc-900 border-zinc-800" placeholder="Enter image URL" />
                             </div>
                             <DialogFooter>
                                 <Button type="submit" disabled={submitLoading} className="w-full bg-[#E50914] hover:bg-[#E50914]/90">
