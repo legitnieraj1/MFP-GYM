@@ -57,7 +57,7 @@ export function Contact() {
                             </a>
 
                             <a
-                                href="mailto:info@mfpgym.com"
+                                href="mailto:mfppnproman@gmail.com"
                                 className="flex items-center gap-4 group cursor-pointer"
                             >
                                 <div className="p-3 bg-white/5 rounded-full text-primary group-hover:bg-primary group-hover:text-white transition-colors">
@@ -65,18 +65,20 @@ export function Contact() {
                                 </div>
                                 <div>
                                     <h4 className="font-bold text-white group-hover:text-primary transition-colors">Email</h4>
-                                    <p className="text-muted-foreground hover:text-white transition-colors">info@mfpgym.com</p>
+                                    <p className="text-muted-foreground hover:text-white transition-colors">mfppnproman@gmail.com</p>
                                 </div>
                             </a>
 
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-start gap-4">
                                 <div className="p-3 bg-white/5 rounded-full text-primary">
                                     <Clock className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-white">Opening Hours</h4>
-                                    <p className="text-muted-foreground">Mon - Sat: 5:00 AM - 11:00 PM</p>
-                                    <p className="text-muted-foreground">Sun: 6:00 AM - 2:00 PM</p>
+                                    <h4 className="font-bold text-white mb-2">Opening Hours</h4>
+                                    <p className="text-muted-foreground font-medium mb-1">Mon - Sat:</p>
+                                    <p className="text-muted-foreground ml-2">Morning: 5 AM - 11 AM</p>
+                                    <p className="text-muted-foreground ml-2">Evening: 5 PM - 9 PM</p>
+                                    <p className="text-primary font-medium mt-2">Sunday: Holiday (Rest)</p>
                                 </div>
                             </div>
 
