@@ -414,6 +414,9 @@ export default function MembersPage() {
                                 <div>
                                     <h3 className="text-xl font-bold">{memberDetails.name}</h3>
                                     <p className="text-zinc-400">{memberDetails.mobile}</p>
+                                    {memberDetails.enroll_no && (
+                                        <p className="text-xs text-zinc-500 mb-2">Enroll No: <span className="text-zinc-300 font-medium">{memberDetails.enroll_no}</span></p>
+                                    )}
                                     <span className={`text-xs px-2 py-1 rounded-full ${new Date(memberDetails.membership_end) > new Date() ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
                                         {new Date(memberDetails.membership_end) > new Date() ? 'ACTIVE' : 'EXPIRED'}
                                     </span>
