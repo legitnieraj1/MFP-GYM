@@ -51,6 +51,26 @@ export function Footer() {
                     </ul>
                 </div>
 
+                {/* Contact & Hours */}
+                <div>
+                    <h4 className="font-bold mb-4 uppercase text-sm tracking-wider">Contact & Hours</h4>
+                    <ul className="space-y-4 text-sm text-muted-foreground">
+                        <li>
+                            <a href="mailto:mfppnproman@gmail.com" className="hover:text-primary break-all">
+                                mfppnproman@gmail.com
+                            </a>
+                        </li>
+                        <li>
+                            <p className="text-white/80 font-medium mb-1">Mon - Sat:</p>
+                            <p>Morning: 5 AM - 11 AM</p>
+                            <p>Evening: 5 PM - 9 PM</p>
+                        </li>
+                        <li>
+                            <p className="text-primary font-medium">Sunday: Holiday (Rest)</p>
+                        </li>
+                    </ul>
+                </div>
+
                 {/* Contact column removed as per request */}
             </div>
             <div className="border-t border-white/5 mt-12 pt-8 flex flex-col md:flex-row items-center justify-center gap-2 text-xs text-muted-foreground text-center">
