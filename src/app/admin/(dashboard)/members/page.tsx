@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getMembers, createMember, renewMembership, updateMember, getMemberDetails } from "@/app/actions/admin";
+import { getMembers, createMember, renewMembership, updateMember, getMemberDetails, updateMembershipDates } from "@/app/actions/admin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,6 +50,7 @@ type Member = {
     membership: {
         plan: string;
         status: string;
+        start_date?: string;
         end_date: string;
     } | null;
 };
@@ -65,6 +66,7 @@ export default function MembersPage() {
     const [isRenewOpen, setIsRenewOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isEditDatesOpen, setIsEditDatesOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<Member | null>(null);
     const [memberDetails, setMemberDetails] = useState<any>(null);
     const [actionLoading, setActionLoading] = useState(false);
@@ -120,6 +122,25 @@ export default function MembersPage() {
             setIsEditOpen(false);
             fetchMembers();
             alert("Member updated successfully!");
+        } else {
+            alert(res.error);
+        }
+        setSubmitLoading(false);
+    };
+
+    const handleEditDates = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!selectedMember) return;
+        setSubmitLoading(true);
+        const formData = new FormData(e.currentTarget);
+        const startDate = formData.get("start_date") as string;
+        const endDate = formData.get("end_date") as string;
+
+        const res = await updateMembershipDates(selectedMember.id, startDate, endDate);
+        if (res.success) {
+            setIsEditDatesOpen(false);
+            fetchMembers();
+            alert("Membership dates updated successfully!");
         } else {
             alert(res.error);
         }
@@ -360,6 +381,7 @@ export default function MembersPage() {
                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                             <DropdownMenuItem onClick={() => handleViewProfile(member)}>View Profile</DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => { setSelectedMember(member); setIsEditOpen(true); }}>Edit Member</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => { setSelectedMember(member); setIsEditDatesOpen(true); }}>Edit Membership Dates</DropdownMenuItem>
                                             <DropdownMenuSeparator className="bg-zinc-800" />
                                             <DropdownMenuItem onClick={() => { setSelectedMember(member); setIsRenewOpen(true); }}>Renew Membership</DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -548,6 +570,43 @@ export default function MembersPage() {
                         <DialogFooter>
                             <Button type="submit" disabled={submitLoading} className="w-full bg-white text-black hover:bg-zinc-200">
                                 {submitLoading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : null} Save Changes
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Membership Dates Dialog */}
+            <Dialog open={isEditDatesOpen} onOpenChange={setIsEditDatesOpen}>
+                <DialogContent className="bg-[#0A0A0A] border-zinc-800 text-white">
+                    <DialogHeader>
+                        <DialogTitle>Edit Membership Dates</DialogTitle>
+                        <p className="text-sm text-zinc-400">Editing dates for {selectedMember?.name}</p>
+                    </DialogHeader>
+                    <form onSubmit={handleEditDates} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Start Date</Label>
+                            <Input
+                                type="date"
+                                name="start_date"
+                                defaultValue={selectedMember?.membership?.start_date ? new Date(selectedMember.membership.start_date).toISOString().split('T')[0] : ""}
+                                required
+                                className="bg-zinc-900 border-zinc-800"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>End Date</Label>
+                            <Input
+                                type="date"
+                                name="end_date"
+                                defaultValue={selectedMember?.membership?.end_date ? new Date(selectedMember.membership.end_date).toISOString().split('T')[0] : ""}
+                                required
+                                className="bg-zinc-900 border-zinc-800"
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button type="submit" disabled={submitLoading} className="w-full bg-[#E50914] hover:bg-[#E50914]/90 text-white">
+                                {submitLoading ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : null} Save Dates
                             </Button>
                         </DialogFooter>
                     </form>

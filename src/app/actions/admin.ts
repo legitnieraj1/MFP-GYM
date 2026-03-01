@@ -53,6 +53,7 @@ export async function getMembers() {
                 membership: member.membership_end ? {
                     plan: plan,
                     status: isActive ? "ACTIVE" : "EXPIRED",
+                    start_date: member.membership_start,
                     end_date: member.membership_end
                 } : null
             };
@@ -191,6 +192,29 @@ export async function renewMembership(memberId: string, plan: string, durationMo
         return { success: false, error: error.message };
     }
 }
+
+export async function updateMembershipDates(memberId: string, startDate: string, endDate: string) {
+    if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
+
+    try {
+        const { error: updateErr } = await supabaseAdmin
+            .from("members")
+            .update({
+                membership_start: new Date(startDate).toISOString(),
+                membership_end: new Date(endDate).toISOString()
+            })
+            .eq("id", memberId);
+
+        if (updateErr) throw updateErr;
+
+        revalidatePath("/admin/members");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Failed to update membership dates:", error);
+        return { success: false, error: error.message };
+    }
+}
+
 
 export async function updateMember(memberId: string, formData: FormData) {
     if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
