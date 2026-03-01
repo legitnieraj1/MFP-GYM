@@ -83,7 +83,7 @@ export default function MobileHero() {
                         asChild
                         className="bg-[#E50914] hover:bg-[#b2070f] text-white rounded-full h-12 px-8 text-sm font-bold tracking-[0.2em] shadow-[0_0_20px_-5px_#E50914] transition-all hover:scale-105 hover:shadow-[0_0_30px_-5px_#E50914]"
                     >
-                        <Link href="/register" className="flex items-center gap-2">
+                        <Link href="/signup" className="flex items-center gap-2">
                             JOIN NOW <ArrowRight className="w-4 h-4 ml-1" />
                         </Link>
                     </Button>

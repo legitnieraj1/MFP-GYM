@@ -23,10 +23,6 @@ export default function TrainersPage() {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
 
-    useEffect(() => {
-        fetchTrainers();
-    }, []);
-
     const fetchTrainers = async () => {
         setLoading(true);
         const res = await getTrainers();
@@ -35,6 +31,12 @@ export default function TrainersPage() {
         }
         setLoading(false);
     };
+
+    useEffect(() => {
+        fetchTrainers();
+    }, []);
+
+
 
     const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

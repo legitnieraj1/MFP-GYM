@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/purity */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -81,6 +82,15 @@ export default function MembersPage() {
         setActionLoading(false);
     };
 
+    const fetchMembers = async () => {
+        setLoading(true);
+        const result = await getMembers();
+        if (result.success && result.data) {
+            setMembers(result.data as unknown as Member[]);
+        }
+        setLoading(false);
+    };
+
     const handleRenew = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!selectedMember) return;
@@ -120,14 +130,7 @@ export default function MembersPage() {
         fetchMembers();
     }, []);
 
-    const fetchMembers = async () => {
-        setLoading(true);
-        const result = await getMembers();
-        if (result.success && result.data) {
-            setMembers(result.data as unknown as Member[]);
-        }
-        setLoading(false);
-    };
+
 
     const handleCreateMember = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

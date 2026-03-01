@@ -20,6 +20,21 @@ export default function AdminDashboard() {
     const [expiringMembers, setExpiringMembers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    function getTimeAgo(date: Date) {
+        const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + " years ago";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + " months ago";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + " days ago";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + " hours ago";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + " mins ago";
+        return Math.floor(seconds) + " seconds ago";
+    }
+
     useEffect(() => {
         async function fetchStats() {
             const [membersRes, attendanceRes, paymentsRes] = await Promise.all([
@@ -105,20 +120,7 @@ export default function AdminDashboard() {
         fetchStats();
     }, []);
 
-    function getTimeAgo(date: Date) {
-        const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-        let interval = seconds / 31536000;
-        if (interval > 1) return Math.floor(interval) + " years ago";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + " months ago";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + " days ago";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + " hours ago";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + " mins ago";
-        return Math.floor(seconds) + " seconds ago";
-    }
+
 
     return (
         <div className="space-y-8">
