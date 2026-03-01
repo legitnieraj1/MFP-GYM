@@ -158,10 +158,10 @@ export function Membership({ user }: { user?: any }) {
                         viewport={{ once: true }}
                         className="text-4xl md:text-5xl font-heading font-bold text-white mb-4"
                     >
-                        CHOOSE YOUR <span className="text-primary">WARPATH</span>
+                        AFFORDABLE GYM <span className="text-primary">MEMBERSHIP PLANS</span>
                     </motion.h2>
                     <p className="text-muted-foreground">
-                        Invest in yourself. No hidden fees. No compromises.
+                        Best gym membership rates in Periyanaickenpalayam. Invest in yourself. No hidden fees. No compromises.
                     </p>
                 </div>
 

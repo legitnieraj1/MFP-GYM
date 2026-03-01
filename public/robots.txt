@@ -1,0 +1,10 @@
+# robots.txt for mfpgympnp.in - MFP Gym Periyanaickenpalayam
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /attendance/
+
+# Sitemap
+Sitemap: https://mfpgympnp.in/sitemap.xml

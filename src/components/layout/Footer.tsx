@@ -14,10 +14,10 @@ export function Footer() {
                         </span>
                     </Link>
                     <p className="text-muted-foreground text-sm">
-                        Forging elite bodies and unbreakable minds. Join the revolution.
+                        The best gym in Periyanaickenpalayam, Coimbatore. Forging elite bodies and unbreakable minds since day one.
                     </p>
                     <p className="text-muted-foreground text-xs mt-4">
-                        If you’re looking to take your fitness to the next level we are here to help you. Get trained with me @romanprabhur. We are trained in creating and implementing safe and effective exercise programs for our clients. We keep you physically active to improve your brain health, help manage weight, reduce the risk of disease, strengthen bones and muscles, improve your ability to do everyday activities.
+                        MFP Gym (Team MFP) is the top-rated gym in Periyanaickenpalayam offering personal training, body transformation programs, weight loss and weight gain coaching, contest preparation, and AI-powered diet plans. Founded by Roman Prabhur, we provide safe and effective fitness programs with modern equipment, cardio theatre, group exercise classes, and 24/7 support. Whether you&apos;re searching for the best gym in Periyanaickenpalayam or gyms near Periyanaickenpalayam, Team MFP is your ultimate fitness destination.
                     </p>
                 </div>
 

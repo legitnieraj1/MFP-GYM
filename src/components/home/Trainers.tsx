@@ -43,10 +43,10 @@ export function Trainers() {
                         viewport={{ once: true }}
                         className="text-4xl md:text-5xl font-heading font-bold text-white mb-4"
                     >
-                        MEET THE <span className="text-primary">ELITE</span>
+                        EXPERT TRAINERS AT <span className="text-primary">MFP GYM</span>
                     </motion.h2>
                     <p className="text-muted-foreground max-w-2xl mx-auto">
-                        Our trainers are more than just coaches; they are mentors dedicated to pushing you beyond your perceived limits.
+                        Meet Team MFP — our certified personal trainers in Periyanaickenpalayam are more than just coaches; they are mentors dedicated to pushing you beyond your perceived limits.
                     </p>
                 </div>
 
@@ -92,6 +92,8 @@ function TrainerCard({ trainer, index }: { trainer: any, index: number }) {
                             backgroundImage: `url('${trainer.image}')`,
                             backgroundPosition: trainer.position || 'center'
                         }}
+                        role="img"
+                        aria-label={`${trainer.name} - ${trainer.specialization} at MFP Gym Periyanaickenpalayam`}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 

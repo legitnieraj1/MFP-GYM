@@ -20,10 +20,10 @@ export function Contact() {
                     >
                         <div>
                             <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6">
-                                GET IN <span className="text-primary">TOUCH</span>
+                                VISIT <span className="text-primary">MFP GYM</span> PERIYANAICKENPALAYAM
                             </h2>
                             <p className="text-muted-foreground text-lg">
-                                Ready to start your transformation? Drop us a message or visit us directly.
+                                Ready to start your fitness transformation? Visit the best gym in Periyanaickenpalayam or contact Team MFP today.
                             </p>
                         </div>
 
@@ -137,6 +137,7 @@ export function Contact() {
                                 style={{ border: 0 }}
                                 allowFullScreen
                                 loading="lazy"
+                                title="MFP Gym Location - Best Gym in Periyanaickenpalayam, Coimbatore"
                             ></iframe>
                         </div>
                     </motion.div>

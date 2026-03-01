@@ -114,7 +114,7 @@ export function Testimonials() {
         <section className="py-24 bg-zinc-950/50" id="testimonials">
             <div className="container mx-auto px-4">
                 <h2 className="text-3xl md:text-5xl font-heading font-bold text-center text-white mb-12">
-                    STORIES OF <span className="text-primary">TRIUMPH</span>
+                    MFP GYM <span className="text-primary">MEMBER REVIEWS</span>
                 </h2>
 
                 <div className="overflow-hidden cursor-grab active:cursor-grabbing" ref={emblaRef}>

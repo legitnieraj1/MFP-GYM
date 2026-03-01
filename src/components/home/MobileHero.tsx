@@ -70,6 +70,7 @@ export default function MobileHero() {
                 >
                     TRAIN <span className="text-primary text-glow">HARD</span>. <br />
                     STAY <span className="text-primary text-glow">STRONG</span>.
+                    <span className="sr-only">MFP Gym - Best Gym in Periyanaickenpalayam, Coimbatore</span>
                 </motion.h1>
 
                 <motion.div

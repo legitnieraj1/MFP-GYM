@@ -133,7 +133,18 @@ export default function ScrollyCanvasHero() {
 
     return (
         <div ref={containerRef} className="relative h-[500vh] bg-black">
-            {!isLoaded && <div className="fixed inset-0 z-50 bg-black flex items-center justify-center text-white">Loading...</div>}
+            {!isLoaded && (
+                <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+                    <video
+                        src="/Animation - 1712217414998.webm"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-full max-w-xs md:max-w-sm object-contain"
+                    />
+                </div>
+            )}
 
             <div className="sticky top-0 h-screen w-full overflow-hidden">
                 <canvas
@@ -157,6 +168,7 @@ export default function ScrollyCanvasHero() {
                         <h1 className="text-5xl md:text-8xl font-heading font-bold text-white mb-6 tracking-tighter">
                             TRAIN <span className="text-primary text-glow">HARD</span>. <br />
                             STAY <span className="text-primary text-glow">STRONG</span>.
+                            <span className="sr-only">MFP Gym - Best Gym in Periyanaickenpalayam, Coimbatore</span>
                         </h1>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

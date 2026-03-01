@@ -55,10 +55,10 @@ export function About() {
                         transition={{ duration: 0.8 }}
                     >
                         <h2 className="text-4xl md:text-6xl font-heading font-bold text-white mb-6">
-                            MORE THAN JUST A <span className="text-primary">GYM</span>
+                            BEST GYM IN <span className="text-primary">PERIYANAICKENPALAYAM</span>
                         </h2>
                         <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                            MFP GYM is a community of athletes, bodybuilders, and fitness enthusiasts committed to discipline, growth, and excellence. Our mission is to provide you with the environment, tools, and support you need to push past your limits.
+                            MFP Gym (Team MFP) is the top-rated gym in Periyanaickenpalayam, Coimbatore — a community of athletes, bodybuilders, and fitness enthusiasts committed to discipline, growth, and excellence. Whether you&apos;re looking for the best gym in Periyanaickenpalayam or a complete body transformation, we provide the environment, equipment, and expert trainers to help you push past your limits.
                         </p>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -90,12 +90,14 @@ export function About() {
                                 transition={{ duration: 1 }}
                                 className="absolute inset-0 bg-cover bg-center"
                                 style={{ backgroundImage: `url('${images[currentImageIndex]}')` }}
+                                role="img"
+                                aria-label="MFP Gym Periyanaickenpalayam - gym equipment and training area"
                             />
                         </AnimatePresence>
 
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80 z-10" />
                         <div className="absolute bottom-6 left-6 right-6 z-20">
-                            <p className="text-white font-heading text-3xl">BUILT FOR <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">GREATNESS</span></p>
+                            <p className="text-white font-heading text-3xl">TEAM MFP — BUILT FOR <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">GREATNESS</span></p>
                         </div>
                     </div>
                 </div>
