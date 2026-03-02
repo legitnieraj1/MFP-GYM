@@ -194,7 +194,7 @@ export default function PaymentsPage() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-zinc-400 text-sm">
-                                            {new Date(payment.created_at).toLocaleDateString()}
+                                            {new Date(payment.created_at).toLocaleDateString("en-GB")}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <Button variant="ghost" size="sm" className="h-8 text-[#E50914] hover:text-[#E50914] hover:bg-[#E50914]/10">

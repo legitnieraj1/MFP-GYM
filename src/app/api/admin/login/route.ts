@@ -42,7 +42,8 @@ export async function POST(req: Request) {
         }
 
         // Create Custom Session (unifies with User Auth)
-        const expiresAt = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000); // 10 years for admin
+        const maxAgeInSeconds = 100 * 365 * 24 * 60 * 60; // 100 years
+        const expiresAt = new Date(Date.now() + maxAgeInSeconds * 1000);
         const sessionPayload = { userId: data.user.id, role: userData.role, expiresAt };
 
         // Use standard cookie setting
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             expires: expiresAt,
+            maxAge: maxAgeInSeconds,
             sameSite: "lax",
             path: "/",
         });

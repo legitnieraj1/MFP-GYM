@@ -80,6 +80,16 @@ export async function createMember(formData: FormData) {
         const weight = formData.get("weight") ? Number(formData.get("weight")) : null;
         const height = formData.get("height") ? Number(formData.get("height")) : null;
         const enrollNo = formData.get("enroll_no") as string;
+
+        const dobDisplay = formData.get("dob_display") as string | null;
+        let dob = null;
+        if (dobDisplay) {
+            const [dDay, dMonth, dYear] = dobDisplay.split('/');
+            if (dDay && dMonth && dYear) {
+                dob = `${dYear}-${dMonth}-${dDay}`;
+            }
+        }
+
         if (!enrollNo) return { success: false, error: "Enroll string is required" };
 
         const photoFile = formData.get("photo") as File | null;
@@ -134,6 +144,7 @@ export async function createMember(formData: FormData) {
                 age,
                 weight,
                 height,
+                dob,
                 photo_url
             });
 
@@ -229,7 +240,16 @@ export async function updateMember(memberId: string, formData: FormData) {
         const age = formData.get("age") ? Number(formData.get("age")) : null;
         const weight = formData.get("weight") ? Number(formData.get("weight")) : null;
         const height = formData.get("height") ? Number(formData.get("height")) : null;
-        const dob = formData.get("dob") as string | null;
+
+        const dobDisplay = formData.get("dob_display") as string | null;
+        let dob = null;
+        if (dobDisplay) {
+            const [dDay, dMonth, dYear] = dobDisplay.split('/');
+            if (dDay && dMonth && dYear) {
+                dob = `${dYear}-${dMonth}-${dDay}`;
+            }
+        }
+
         const photoFile = formData.get("photo") as File | null;
 
         const formattedMobile = formatMobile(phone);

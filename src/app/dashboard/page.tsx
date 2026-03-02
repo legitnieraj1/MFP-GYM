@@ -86,7 +86,7 @@ export default async function DashboardPage() {
                                 {memberProfile.dob && (
                                     <div className="flex justify-between">
                                         <span>Date of Birth:</span>
-                                        <span className="font-medium text-white">{new Date(memberProfile.dob).toLocaleDateString()}</span>
+                                        <span className="font-medium text-white">{new Date(memberProfile.dob).toLocaleDateString("en-GB")}</span>
                                     </div>
                                 )}
                                 {memberProfile.age && (
@@ -136,9 +136,9 @@ export default async function DashboardPage() {
                                         {isActive ? 'ACTIVE' : 'EXPIRED'}
                                     </div>
                                     <div className="text-sm text-gray-300 space-y-1">
-                                        <div>Start: {new Date(memberProfile.membership_start).toLocaleDateString()}</div>
+                                        <div>Start: {new Date(memberProfile.membership_start).toLocaleDateString("en-GB")}</div>
                                         {memberProfile.membership_end && (
-                                            <div>End: {new Date(memberProfile.membership_end).toLocaleDateString()}</div>
+                                            <div>End: {new Date(memberProfile.membership_end).toLocaleDateString("en-GB")}</div>
                                         )}
                                     </div>
                                 </div>

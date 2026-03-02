@@ -74,7 +74,8 @@ export async function POST(req: Request) {
         const user = users[0];
 
         // 7. Create Session
-        const expiresAt = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000); // 10 years
+        const maxAgeInSeconds = 100 * 365 * 24 * 60 * 60; // 100 years
+        const expiresAt = new Date(Date.now() + maxAgeInSeconds * 1000);
         const sessionPayload = { userId: user.id, role: user.role, expiresAt };
 
         // We need to import encrypt from session lib
@@ -85,8 +86,9 @@ export async function POST(req: Request) {
 
         response.cookies.set("session", sessionToken, {
             httpOnly: true,
-            secure: false, // Force false for localhost
+            secure: process.env.NODE_ENV === "production",
             expires: expiresAt,
+            maxAge: maxAgeInSeconds,
             sameSite: "lax",
             path: "/",
         });

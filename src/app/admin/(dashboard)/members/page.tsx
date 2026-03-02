@@ -134,8 +134,16 @@ export default function MembersPage() {
         if (!selectedMember) return;
         setSubmitLoading(true);
         const formData = new FormData(e.currentTarget);
-        const startDate = formData.get("start_date") as string;
-        const endDate = formData.get("end_date") as string;
+
+        // Parse DD/MM/YYYY back to YYYY-MM-DD for backend
+        const startDisplay = formData.get("start_date_display") as string;
+        const endDisplay = formData.get("end_date_display") as string;
+
+        const [sDay, sMonth, sYear] = startDisplay.split('/');
+        const [eDay, eMonth, eYear] = endDisplay.split('/');
+
+        const startDate = `${sYear}-${sMonth}-${sDay}`;
+        const endDate = `${eYear}-${eMonth}-${eDay}`;
 
         const res = await updateMembershipDates(selectedMember.id, startDate, endDate);
         if (res.success) {
@@ -237,8 +245,8 @@ export default function MembersPage() {
                                     <Input name="age" type="number" placeholder="Enter age" className="bg-zinc-900 border-zinc-800" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Date of Birth</Label>
-                                    <Input name="dob" type="date" className="bg-zinc-900 border-zinc-800" />
+                                    <Label>Date of Birth (DD/MM/YYYY)</Label>
+                                    <Input name="dob_display" type="text" pattern="\d{2}/\d{2}/\d{4}" placeholder="DD/MM/YYYY" className="bg-zinc-900 border-zinc-800" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Weight (kg)</Label>
@@ -369,7 +377,7 @@ export default function MembersPage() {
                                     )}
                                 </TableCell>
                                 <TableCell className="text-zinc-300">
-                                    {member.membership?.end_date ? new Date(member.membership.end_date).toLocaleDateString() : '-'}
+                                    {member.membership?.end_date ? new Date(member.membership.end_date).toLocaleDateString("en-GB") : '-'}
                                 </TableCell>
                                 <TableCell className="text-right flex items-center justify-end gap-2">
                                     {(member.membership && (member.membership.status !== 'ACTIVE' || (member.membership.end_date && new Date(member.membership.end_date) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)))) && (
@@ -439,15 +447,15 @@ export default function MembersPage() {
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="bg-zinc-900 p-3 rounded-md border border-zinc-800">
                                     <p className="text-xs text-zinc-500">Date of Birth</p>
-                                    <p className="font-medium">{memberDetails.dob ? new Date(memberDetails.dob).toLocaleDateString() : 'N/A'}</p>
+                                    <p className="font-medium">{memberDetails.dob ? new Date(memberDetails.dob).toLocaleDateString("en-GB") : 'N/A'}</p>
                                 </div>
                                 <div className="bg-zinc-900 p-3 rounded-md border border-zinc-800">
                                     <p className="text-xs text-zinc-500">Join Date</p>
-                                    <p className="font-medium">{new Date(memberDetails.membership_start).toLocaleDateString()}</p>
+                                    <p className="font-medium">{new Date(memberDetails.membership_start).toLocaleDateString("en-GB")}</p>
                                 </div>
                                 <div className="bg-zinc-900 p-3 rounded-md border border-zinc-800">
                                     <p className="text-xs text-zinc-500">Expiry Date</p>
-                                    <p className="font-medium">{new Date(memberDetails.membership_end).toLocaleDateString()}</p>
+                                    <p className="font-medium">{new Date(memberDetails.membership_end).toLocaleDateString("en-GB")}</p>
                                 </div>
                             </div>
 
@@ -455,7 +463,7 @@ export default function MembersPage() {
                                 <h4 className="font-semibold mb-2">Recent Payments <span className="text-xs text-zinc-500 font-normal">({memberDetails.payments?.length})</span></h4>
                                 {memberDetails.payments?.slice(0, 3).map((p: any) => (
                                     <div key={p.id} className="text-sm flex justify-between py-1 border-b border-zinc-800/50">
-                                        <span>{new Date(p.created_at).toLocaleDateString()}</span>
+                                        <span>{new Date(p.created_at).toLocaleDateString("en-GB")}</span>
                                         <span className="font-medium flex gap-2"><span className="text-xs text-zinc-500 border rounded px-1">{p.plan}</span> Rs. {p.amount}</span>
                                     </div>
                                 ))}
@@ -464,7 +472,7 @@ export default function MembersPage() {
                                 <h4 className="font-semibold mb-2">Recent Attendance <span className="text-xs text-zinc-500 font-normal">({memberDetails.recent_attendance?.length})</span></h4>
                                 {memberDetails.recent_attendance?.slice(0, 5).map((a: any) => (
                                     <div key={a.id} className="text-sm flex justify-between py-1 border-b border-zinc-800/50">
-                                        <span>{new Date(a.check_in_time).toLocaleDateString()}</span>
+                                        <span>{new Date(a.check_in_time).toLocaleDateString("en-GB")}</span>
                                         <span className="text-zinc-400">{new Date(a.check_in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>
                                 ))}
@@ -557,8 +565,8 @@ export default function MembersPage() {
                                 <Input name="age" type="number" defaultValue={(selectedMember as any)?.age || ""} placeholder="Enter age" className="bg-zinc-900 border-zinc-800" />
                             </div>
                             <div className="space-y-2">
-                                <Label>Date of Birth</Label>
-                                <Input name="dob" type="date" defaultValue={(selectedMember as any)?.dob || ""} className="bg-zinc-900 border-zinc-800" />
+                                <Label>Date of Birth (DD/MM/YYYY)</Label>
+                                <Input name="dob_display" type="text" pattern="\d{2}/\d{2}/\d{4}" placeholder="DD/MM/YYYY" defaultValue={(selectedMember as any)?.dob ? new Date((selectedMember as any).dob).toLocaleDateString("en-GB") : ""} className="bg-zinc-900 border-zinc-800" />
                             </div>
                             <div className="space-y-2">
                                 <Label>Weight (kg)</Label>
@@ -601,21 +609,25 @@ export default function MembersPage() {
                     </DialogHeader>
                     <form onSubmit={handleEditDates} className="space-y-4">
                         <div className="space-y-2">
-                            <Label>Start Date</Label>
+                            <Label>Start Date (DD/MM/YYYY)</Label>
                             <Input
-                                type="date"
-                                name="start_date"
-                                defaultValue={selectedMember?.membership?.start_date ? new Date(selectedMember.membership.start_date).toISOString().split('T')[0] : ""}
+                                type="text"
+                                name="start_date_display"
+                                pattern="\d{2}/\d{2}/\d{4}"
+                                placeholder="DD/MM/YYYY"
+                                defaultValue={selectedMember?.membership?.start_date ? new Date(selectedMember.membership.start_date).toLocaleDateString("en-GB") : ""}
                                 required
                                 className="bg-zinc-900 border-zinc-800"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label>End Date</Label>
+                            <Label>End Date (DD/MM/YYYY)</Label>
                             <Input
-                                type="date"
-                                name="end_date"
-                                defaultValue={selectedMember?.membership?.end_date ? new Date(selectedMember.membership.end_date).toISOString().split('T')[0] : ""}
+                                type="text"
+                                name="end_date_display"
+                                pattern="\d{2}/\d{2}/\d{4}"
+                                placeholder="DD/MM/YYYY"
+                                defaultValue={selectedMember?.membership?.end_date ? new Date(selectedMember.membership.end_date).toLocaleDateString("en-GB") : ""}
                                 required
                                 className="bg-zinc-900 border-zinc-800"
                             />
