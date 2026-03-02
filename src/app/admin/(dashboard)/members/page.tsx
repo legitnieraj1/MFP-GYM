@@ -47,6 +47,7 @@ type Member = {
     email: string;
     phone: string;
     photo: string | null;
+    enroll_no?: string | null;
     membership: {
         plan: string;
         status: string;
@@ -173,8 +174,7 @@ export default function MembersPage() {
 
     const filteredMembers = members.filter(m =>
         (m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            m.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            m.phone?.includes(searchTerm)) ?? false
+            (m.enroll_no && m.enroll_no.toLowerCase().includes(searchTerm.toLowerCase()))) ?? false
     );
 
     return (
@@ -205,9 +205,15 @@ export default function MembersPage() {
                                     <Input name="phone" placeholder="Enter mobile number" required className="bg-zinc-900 border-zinc-800" />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label>Email (Optional)</Label>
-                                <Input name="email" type="email" placeholder="Enter email address" className="bg-zinc-900 border-zinc-800" />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Enroll Number (PIN)</Label>
+                                    <Input name="enroll_no" required placeholder="Enter enroll number" className="bg-zinc-900 border-zinc-800" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Email (Optional)</Label>
+                                    <Input name="email" type="email" placeholder="Enter email address" className="bg-zinc-900 border-zinc-800" />
+                                </div>
                             </div>
 
                             {/* Photo Upload */}
@@ -280,7 +286,7 @@ export default function MembersPage() {
                 <div className="relative flex-1 max-w-sm">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                     <Input
-                        placeholder="Search users..."
+                        placeholder="Search by name or enroll no..."
                         className="pl-10 bg-zinc-900 border-zinc-800 text-white focus:border-[#E50914]"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -327,7 +333,14 @@ export default function MembersPage() {
                                         )}
                                     </div>
                                     <div>
-                                        <div className="font-medium text-white">{member.name}</div>
+                                        <div className="font-medium text-white">
+                                            {member.name}
+                                            {member.enroll_no && (
+                                                <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
+                                                    #{member.enroll_no}
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="text-xs text-zinc-500">ID: {member.id.substring(0, 8)}...</div>
                                     </div>
                                 </TableCell>

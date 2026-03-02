@@ -50,6 +50,7 @@ export async function getMembers() {
                 email: "", // Not available in members table
                 phone: member.mobile,
                 photo: member.photo_url || null, // Getting photo from table
+                enroll_no: member.enroll_no || null,
                 membership: member.membership_end ? {
                     plan: plan,
                     status: isActive ? "ACTIVE" : "EXPIRED",
@@ -78,6 +79,9 @@ export async function createMember(formData: FormData) {
         const age = formData.get("age") ? Number(formData.get("age")) : null;
         const weight = formData.get("weight") ? Number(formData.get("weight")) : null;
         const height = formData.get("height") ? Number(formData.get("height")) : null;
+        const enrollNo = formData.get("enroll_no") as string;
+        if (!enrollNo) return { success: false, error: "Enroll string is required" };
+
         const photoFile = formData.get("photo") as File | null;
 
         let photo_url = null;
@@ -99,8 +103,7 @@ export async function createMember(formData: FormData) {
         }
 
         const formattedMobile = formatMobile(phone);
-        const pin = phone.slice(-4); // Default PIN is last 4 digits
-        const pinHash = await hashPin(pin);
+        const pinHash = await hashPin(enrollNo);
 
         // Calculate Dates
         const joinDateStr = formData.get("joinDate") as string;
@@ -121,6 +124,7 @@ export async function createMember(formData: FormData) {
         const { error: memberError } = await supabaseAdmin
             .from("members")
             .insert({
+                enroll_no: enrollNo,
                 name,
                 mobile: formattedMobile,
                 pin_hash: pinHash,
