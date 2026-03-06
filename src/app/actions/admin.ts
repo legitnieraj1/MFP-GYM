@@ -33,14 +33,16 @@ export async function getMembers() {
             const isActive = member.membership_end ? new Date(member.membership_end) > new Date() : false;
 
             // Calculate plan based on duration if needed, or default
-            let plan = "BASIC";
-            if (member.membership_start && member.membership_end) {
+            let plan = member.membership_plan || "BASIC";
+            if (!member.membership_plan && member.membership_start && member.membership_end) {
                 const start = new Date(member.membership_start);
                 const end = new Date(member.membership_end);
                 const days = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
                 if (days > 300) plan = "ELITE";
                 else if (days > 150) plan = "PRO";
-                else if (days > 60) plan = "BASIC";
+                else if (days > 100) plan = "TRANSFORM_120";
+                else if (days > 50) plan = "TRANSFORM_60";
+                else if (days > 25) plan = "BASIC";
                 else plan = "BASIC_1M";
             }
 
@@ -123,11 +125,15 @@ export async function createMember(formData: FormData) {
         if (plan === "BASIC_1M") {
             endDate.setMonth(startDate.getMonth() + 1);
         } else if (plan === "BASIC") {
-            endDate.setMonth(startDate.getMonth() + 3);
+            endDate.setMonth(startDate.getMonth() + 6); // 3+3 Offer
         } else if (plan === "PRO") {
-            endDate.setMonth(startDate.getMonth() + 6);
+            endDate.setMonth(startDate.getMonth() + 12); // 6+6 Offer
         } else if (plan === "ELITE") {
-            endDate.setFullYear(startDate.getFullYear() + 1);
+            endDate.setMonth(startDate.getMonth() + 24); // 12+12 Offer
+        } else if (plan === "TRANSFORM_60") {
+            endDate.setDate(startDate.getDate() + 60);
+        } else if (plan === "TRANSFORM_120") {
+            endDate.setDate(startDate.getDate() + 120);
         }
 
         // Insert into members table
@@ -138,6 +144,7 @@ export async function createMember(formData: FormData) {
                 name,
                 mobile: formattedMobile,
                 pin_hash: pinHash,
+                membership_plan: plan,
                 membership_start: startDate.toISOString(),
                 membership_end: endDate.toISOString(),
                 legacy_member: false,
@@ -160,7 +167,20 @@ export async function createMember(formData: FormData) {
     }
 }
 
-export async function renewMembership(memberId: string, plan: string, durationMonths: number) {
+// Helper: get duration in days for a plan
+function getPlanDuration(plan: string): { months?: number; days?: number } {
+    switch (plan) {
+        case "BASIC_1M": return { months: 1 };
+        case "BASIC": return { months: 6 }; // 3+3 Offer
+        case "PRO": return { months: 12 }; // 6+6 Offer
+        case "ELITE": return { months: 24 }; // 12+12 Offer
+        case "TRANSFORM_60": return { days: 60 };
+        case "TRANSFORM_120": return { days: 120 };
+        default: return { months: 3 };
+    }
+}
+
+export async function renewMembership(memberId: string, plan: string) {
     if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
 
     try {
@@ -177,13 +197,20 @@ export async function renewMembership(memberId: string, plan: string, durationMo
         const currentEnd = member.membership_end ? new Date(member.membership_end) : new Date(0);
 
         // If expired, start from today. If active, extend from current end date.
-        let newStartDate = currentEnd > now ? currentEnd : now;
-        let newEndDate = new Date(newStartDate);
-        newEndDate.setMonth(newStartDate.getMonth() + durationMonths);
+        const newStartDate = currentEnd > now ? currentEnd : now;
+        const newEndDate = new Date(newStartDate);
+
+        const duration = getPlanDuration(plan);
+        if (duration.months) {
+            newEndDate.setMonth(newStartDate.getMonth() + duration.months);
+        } else if (duration.days) {
+            newEndDate.setDate(newStartDate.getDate() + duration.days);
+        }
 
         const { error: updateErr } = await supabaseAdmin
             .from("members")
             .update({
+                membership_plan: plan,
                 membership_start: newStartDate.toISOString(),
                 membership_end: newEndDate.toISOString()
             })
@@ -191,7 +218,7 @@ export async function renewMembership(memberId: string, plan: string, durationMo
 
         if (updateErr) throw updateErr;
 
-        // Optionally record a direct backend payment entry for internal renewals:
+        // Record a direct backend payment entry for internal renewals:
         await supabaseAdmin.from("member_payments").insert({
             member_id: memberId,
             amount: 0, // Admin manual renewal
@@ -512,6 +539,23 @@ export async function createTrainer(formData: FormData) {
         return { success: true, data };
     } catch (error: any) {
         console.error("Error creating trainer:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteMember(id: string) {
+    if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
+    try {
+        const { error } = await supabaseAdmin
+            .from("members")
+            .delete()
+            .eq("id", id);
+
+        if (error) throw error;
+        revalidatePath("/admin/members");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error deleting member:", error);
         return { success: false, error: error.message };
     }
 }

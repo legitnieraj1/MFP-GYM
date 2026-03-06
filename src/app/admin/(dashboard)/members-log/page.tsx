@@ -41,8 +41,12 @@ export default function MembersLogPage() {
     });
 
     const calculatePlanFromAmount = (amount: number) => {
+        if (amount >= 14000) return "TRANSFORM_120";
+        if (amount >= 8000) return "TRANSFORM_60";
         if (amount >= 6000) return "ELITE";
         if (amount >= 4000) return "PRO";
+        if (amount >= 2500) return "BASIC";
+        if (amount >= 1000) return "BASIC_1M";
         return "BASIC";
     };
 
@@ -261,9 +265,12 @@ export default function MembersLogPage() {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="BASIC">BASIC (Quarterly)</SelectItem>
-                                            <SelectItem value="PRO">PRO (Half-Yearly)</SelectItem>
-                                            <SelectItem value="ELITE">ELITE (Yearly)</SelectItem>
+                                            <SelectItem value="BASIC_1M">BASIC (1 Month)</SelectItem>
+                                            <SelectItem value="BASIC">BASIC (3+3 Months Offer)</SelectItem>
+                                            <SelectItem value="PRO">PRO (6+6 Months Offer)</SelectItem>
+                                            <SelectItem value="ELITE">ELITE (1+1 Year Offer)</SelectItem>
+                                            <SelectItem value="TRANSFORM_60">60 Day Transformation</SelectItem>
+                                            <SelectItem value="TRANSFORM_120">120 Day Transformation</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <p className="text-xs text-zinc-500">Auto-selected based on amount paid.</p>

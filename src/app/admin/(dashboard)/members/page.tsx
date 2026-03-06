@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/purity */
 "use client";
 
-import { useState, useEffect } from "react";
-import { getMembers, createMember, renewMembership, updateMember, getMemberDetails, updateMembershipDates } from "@/app/actions/admin";
+import { useState, useEffect, useMemo } from "react";
+import { getMembers, createMember, renewMembership, updateMember, getMemberDetails, updateMembershipDates, deleteMember } from "@/app/actions/admin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -71,6 +71,30 @@ export default function MembersPage() {
     const [selectedMember, setSelectedMember] = useState<Member | null>(null);
     const [memberDetails, setMemberDetails] = useState<any>(null);
     const [actionLoading, setActionLoading] = useState(false);
+    const [renewPlan, setRenewPlan] = useState("BASIC");
+
+    // Compute preview dates for renew dialog
+    const renewPreview = useMemo(() => {
+        const PLAN_DURATIONS: Record<string, { months?: number; days?: number; label: string }> = {
+            BASIC_1M: { months: 1, label: "BASIC (1 Month)" },
+            BASIC: { months: 6, label: "BASIC (3+3 Months Offer)" },
+            PRO: { months: 12, label: "PRO (6+6 Months Offer)" },
+            ELITE: { months: 24, label: "ELITE (1+1 Year Offer)" },
+            TRANSFORM_60: { days: 60, label: "60 Day Transformation" },
+            TRANSFORM_120: { days: 120, label: "120 Day Transformation" },
+        };
+        const now = new Date();
+        const currentEnd = selectedMember?.membership?.end_date ? new Date(selectedMember.membership.end_date) : null;
+        const startDate = currentEnd && currentEnd > now ? currentEnd : now;
+        const endDate = new Date(startDate);
+        const duration = PLAN_DURATIONS[renewPlan];
+        if (duration?.months) endDate.setMonth(startDate.getMonth() + duration.months);
+        else if (duration?.days) endDate.setDate(startDate.getDate() + duration.days);
+        return {
+            start: startDate.toLocaleDateString("en-GB"),
+            end: endDate.toLocaleDateString("en-GB"),
+        };
+    }, [renewPlan, selectedMember]);
 
     const handleViewProfile = async (member: Member) => {
         setSelectedMember(member);
@@ -100,9 +124,8 @@ export default function MembersPage() {
         setSubmitLoading(true);
         const formData = new FormData(e.currentTarget);
         const plan = formData.get("plan") as string;
-        const duration = Number(formData.get("duration"));
 
-        const res = await renewMembership(selectedMember.id, plan, duration);
+        const res = await renewMembership(selectedMember.id, plan);
         if (res.success) {
             setIsRenewOpen(false);
             fetchMembers();
@@ -167,8 +190,6 @@ export default function MembersPage() {
         setSubmitLoading(true);
         const formData = new FormData(e.currentTarget);
 
-
-
         const result = await createMember(formData);
 
         if (result.success) {
@@ -178,6 +199,20 @@ export default function MembersPage() {
             alert(result.error);
         }
         setSubmitLoading(false);
+    };
+
+    const handleDeleteMember = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this member? This action cannot be undone.")) return;
+
+        setLoading(true);
+        const res = await deleteMember(id);
+        if (res.success) {
+            fetchMembers();
+            alert("Member deleted successfully.");
+        } else {
+            alert(res.error);
+            setLoading(false);
+        }
     };
 
     const filteredMembers = members.filter(m =>
@@ -266,9 +301,11 @@ export default function MembersPage() {
                                     </SelectTrigger>
                                     <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
                                         <SelectItem value="BASIC_1M">BASIC (1 Month)</SelectItem>
-                                        <SelectItem value="BASIC">BASIC (Quarterly)</SelectItem>
-                                        <SelectItem value="PRO">PRO (Half-Yearly)</SelectItem>
-                                        <SelectItem value="ELITE">ELITE (Yearly)</SelectItem>
+                                        <SelectItem value="BASIC">BASIC (3+3 Months Offer)</SelectItem>
+                                        <SelectItem value="PRO">PRO (6+6 Months Offer)</SelectItem>
+                                        <SelectItem value="ELITE">ELITE (1+1 Year Offer)</SelectItem>
+                                        <SelectItem value="TRANSFORM_60">60 Day Transformation</SelectItem>
+                                        <SelectItem value="TRANSFORM_120">120 Day Transformation</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -405,6 +442,8 @@ export default function MembersPage() {
                                             <DropdownMenuItem onClick={() => { setSelectedMember(member); setIsEditDatesOpen(true); }}>Edit Membership Dates</DropdownMenuItem>
                                             <DropdownMenuSeparator className="bg-zinc-800" />
                                             <DropdownMenuItem onClick={() => { setSelectedMember(member); setIsRenewOpen(true); }}>Renew Membership</DropdownMenuItem>
+                                            <DropdownMenuSeparator className="bg-zinc-800" />
+                                            <DropdownMenuItem onClick={() => handleDeleteMember(member.id)} className="text-red-500 focus:text-red-500">Delete Member</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>
@@ -483,7 +522,7 @@ export default function MembersPage() {
             </Dialog>
 
             {/* Renew Dialog */}
-            <Dialog open={isRenewOpen} onOpenChange={setIsRenewOpen}>
+            <Dialog open={isRenewOpen} onOpenChange={(open) => { setIsRenewOpen(open); if (!open) setRenewPlan("BASIC"); }}>
                 <DialogContent className="bg-[#0A0A0A] border-zinc-800 text-white">
                     <DialogHeader>
                         <DialogTitle>Renew Membership</DialogTitle>
@@ -492,31 +531,30 @@ export default function MembersPage() {
                     <form onSubmit={handleRenew} className="space-y-4">
                         <div className="space-y-2">
                             <Label>Plan</Label>
-                            <Select name="plan" defaultValue="BASIC">
+                            <Select name="plan" value={renewPlan} onValueChange={setRenewPlan}>
                                 <SelectTrigger className="bg-zinc-900 border-zinc-800">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
                                     <SelectItem value="BASIC_1M">BASIC (1 Month)</SelectItem>
-                                    <SelectItem value="BASIC">BASIC</SelectItem>
-                                    <SelectItem value="PRO">PRO</SelectItem>
-                                    <SelectItem value="ELITE">ELITE</SelectItem>
+                                    <SelectItem value="BASIC">BASIC (3+3 Months Offer)</SelectItem>
+                                    <SelectItem value="PRO">PRO (6+6 Months Offer)</SelectItem>
+                                    <SelectItem value="ELITE">ELITE (1+1 Year Offer)</SelectItem>
+                                    <SelectItem value="TRANSFORM_60">60 Day Transformation</SelectItem>
+                                    <SelectItem value="TRANSFORM_120">120 Day Transformation</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label>Duration (Months)</Label>
-                            <Select name="duration" defaultValue="3">
-                                <SelectTrigger className="bg-zinc-900 border-zinc-800">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
-                                    <SelectItem value="1">1 Month</SelectItem>
-                                    <SelectItem value="3">3 Months</SelectItem>
-                                    <SelectItem value="6">6 Months</SelectItem>
-                                    <SelectItem value="12">12 Months</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        {/* Date preview */}
+                        <div className="rounded-md bg-zinc-900 border border-zinc-700 px-4 py-3 text-sm space-y-1">
+                            <div className="flex justify-between">
+                                <span className="text-zinc-400">Start Date</span>
+                                <span className="font-medium text-white">{renewPreview.start}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-zinc-400">End Date</span>
+                                <span className="font-medium text-[#E50914]">{renewPreview.end}</span>
+                            </div>
                         </div>
                         <DialogFooter>
                             <Button type="submit" disabled={submitLoading} className="w-full bg-[#E50914] hover:bg-[#E50914]/90 text-white">
@@ -578,16 +616,18 @@ export default function MembersPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label>Plan (Label ONLY - docs not affect renewal)</Label>
+                            <Label>Plan (Label ONLY - does not affect renewal)</Label>
                             <Select name="plan" defaultValue={selectedMember?.membership?.plan || "BASIC"}>
                                 <SelectTrigger className="bg-zinc-900 border-zinc-800">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
                                     <SelectItem value="BASIC_1M">BASIC (1 Month)</SelectItem>
-                                    <SelectItem value="BASIC">BASIC</SelectItem>
-                                    <SelectItem value="PRO">PRO</SelectItem>
-                                    <SelectItem value="ELITE">ELITE</SelectItem>
+                                    <SelectItem value="BASIC">BASIC (3+3 Months Offer)</SelectItem>
+                                    <SelectItem value="PRO">PRO (6+6 Months Offer)</SelectItem>
+                                    <SelectItem value="ELITE">ELITE (1+1 Year Offer)</SelectItem>
+                                    <SelectItem value="TRANSFORM_60">60 Day Transformation</SelectItem>
+                                    <SelectItem value="TRANSFORM_120">120 Day Transformation</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

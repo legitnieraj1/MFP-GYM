@@ -15,7 +15,7 @@ export function openWhatsAppReminder(member: any) {
     const message = `Dear ${name},
 
 Your MFP Gym membership ${expiryText}.
-Kindly renew your fee to continue your fitness journey 💪
+Kindly renew your fee to continue your fitness journey.
 
 – MFP Gym`;
 
