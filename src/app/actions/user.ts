@@ -17,7 +17,8 @@ export async function updateMyProfile(formData: FormData) {
         const age = formData.get("age") ? Number(formData.get("age")) : null;
         const weight = formData.get("weight") ? Number(formData.get("weight")) : null;
         const height = formData.get("height") ? Number(formData.get("height")) : null;
-        const dob = formData.get("dob") as string | null;
+        const dobRaw = formData.get("dob") as string | null;
+        const dob = dobRaw ? dobRaw : null;
         const photoFile = formData.get("photo") as File | null;
 
         const updateData: any = {
