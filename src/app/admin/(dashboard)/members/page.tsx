@@ -41,6 +41,8 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { openWhatsAppReminder } from "@/utils/whatsapp";
 
+import imageCompression from 'browser-image-compression';
+
 type Member = {
     id: string;
     name: string;
@@ -141,6 +143,22 @@ export default function MembersPage() {
         if (!selectedMember) return;
         setSubmitLoading(true);
         const formData = new FormData(e.currentTarget);
+
+        const photoFile = formData.get("photo") as File;
+        if (photoFile && photoFile.size > 0) {
+            try {
+                const options = {
+                    maxSizeMB: 0.8,
+                    maxWidthOrHeight: 1024,
+                    useWebWorker: true,
+                };
+                const compressedFile = await imageCompression(photoFile, options);
+                formData.set("photo", compressedFile, photoFile.name);
+            } catch (error) {
+                console.error("Error compressing image:", error);
+            }
+        }
+
         const res = await updateMember(selectedMember.id, formData);
         if (res.success) {
             setIsEditOpen(false);
@@ -189,6 +207,21 @@ export default function MembersPage() {
         e.preventDefault();
         setSubmitLoading(true);
         const formData = new FormData(e.currentTarget);
+
+        const photoFile = formData.get("photo") as File;
+        if (photoFile && photoFile.size > 0) {
+            try {
+                const options = {
+                    maxSizeMB: 0.8,
+                    maxWidthOrHeight: 1024,
+                    useWebWorker: true,
+                };
+                const compressedFile = await imageCompression(photoFile, options);
+                formData.set("photo", compressedFile, photoFile.name);
+            } catch (error) {
+                console.error("Error compressing image:", error);
+            }
+        }
 
         const result = await createMember(formData);
 
