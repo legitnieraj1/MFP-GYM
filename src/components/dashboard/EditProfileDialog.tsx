@@ -51,7 +51,6 @@ export function EditProfileDialog({ memberProfile }: { memberProfile: any }) {
                             type="file"
                             name="photo"
                             accept="image/*"
-                            capture="environment"
                             className="bg-zinc-900 border-zinc-800 file:bg-[#E50914] file:text-white file:border-0 file:rounded-sm file:px-2 file:mr-4"
                         />
                         <p className="text-xs text-zinc-500">Upload new photo (leaves existing if empty).</p>

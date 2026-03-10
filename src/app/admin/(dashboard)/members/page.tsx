@@ -300,7 +300,6 @@ export default function MembersPage() {
                                         type="file"
                                         name="photo"
                                         accept="image/*"
-                                        capture="environment" // Opens camera on mobile
                                         className="bg-zinc-900 border-zinc-800 file:bg-[#E50914] file:text-white file:border-0 file:rounded-sm file:px-2 file:mr-4"
                                     />
                                 </div>
@@ -623,7 +622,6 @@ export default function MembersPage() {
                                     type="file"
                                     name="photo"
                                     accept="image/*"
-                                    capture="environment"
                                     className="bg-zinc-900 border-zinc-800 file:bg-[#E50914] file:text-white file:border-0 file:rounded-sm file:px-2 file:mr-4"
                                 />
                             </div>
