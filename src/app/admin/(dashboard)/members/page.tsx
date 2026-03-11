@@ -74,6 +74,7 @@ export default function MembersPage() {
     const [memberDetails, setMemberDetails] = useState<any>(null);
     const [actionLoading, setActionLoading] = useState(false);
     const [renewPlan, setRenewPlan] = useState("BASIC");
+    const [photoViewerUrl, setPhotoViewerUrl] = useState<string | null>(null);
 
     // Compute preview dates for renew dialog
     const renewPreview = useMemo(() => {
@@ -400,7 +401,10 @@ export default function MembersPage() {
                         ) : filteredMembers.map((member) => (
                             <TableRow key={member.id} className="border-zinc-800 hover:bg-zinc-800/50 transition-colors">
                                 <TableCell className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-full overflow-hidden bg-zinc-800 border border-white/10">
+                                    <div 
+                                        className={`h-10 w-10 rounded-full overflow-hidden bg-zinc-800 border border-white/10 ${member.photo ? 'cursor-pointer hover:ring-2 hover:ring-[#E50914] transition-all' : ''}`}
+                                        onClick={() => member.photo && setPhotoViewerUrl(member.photo)}
+                                    >
                                         {member.photo ? (
                                             <img src={member.photo} alt={member.name} className="h-full w-full object-cover" />
                                         ) : (
@@ -496,7 +500,10 @@ export default function MembersPage() {
                     ) : (
                         <div className="space-y-6">
                             <div className="flex items-center gap-4 border-b border-zinc-800 pb-4">
-                                <div className="h-16 w-16 bg-zinc-800 rounded-full flex items-center justify-center overflow-hidden border border-white/10">
+                                <div 
+                                    className={`h-16 w-16 bg-zinc-800 rounded-full flex items-center justify-center overflow-hidden border border-white/10 ${memberDetails.photo_url ? 'cursor-pointer hover:ring-2 hover:ring-[#E50914] transition-all' : ''}`}
+                                    onClick={() => memberDetails.photo_url && setPhotoViewerUrl(memberDetails.photo_url)}
+                                >
                                     {memberDetails.photo_url ? (
                                         <img src={memberDetails.photo_url} alt={memberDetails.name} className="h-full w-full object-cover" />
                                     ) : (
@@ -668,6 +675,19 @@ export default function MembersPage() {
                             </Button>
                         </DialogFooter>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Photo Viewer Dialog */}
+            <Dialog open={!!photoViewerUrl} onOpenChange={(open) => !open && setPhotoViewerUrl(null)}>
+                <DialogContent className="bg-transparent border-none p-0 max-w-4xl flex justify-center items-center shadow-none">
+                    {photoViewerUrl && (
+                        <img 
+                            src={photoViewerUrl} 
+                            alt="Member Profile" 
+                            className="max-w-full max-h-[85vh] object-contain rounded-md" 
+                        />
+                    )}
                 </DialogContent>
             </Dialog>
 
