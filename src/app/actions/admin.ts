@@ -302,6 +302,29 @@ export async function updateMember(memberId: string, formData: FormData) {
                     .from("member-photos")
                     .getPublicUrl(fileName);
                 updateData.photo_url = publicUrl;
+
+                // Delete the old photo if it exists
+                const { data: existingMember } = await supabaseAdmin
+                    .from("members")
+                    .select("photo_url")
+                    .eq("id", memberId)
+                    .single();
+
+                if (existingMember && existingMember.photo_url) {
+                    try {
+                        // Extract the filename from the public URL
+                        const urlParts = existingMember.photo_url.split('/');
+                        const oldFileName = urlParts[urlParts.length - 1];
+                        if (oldFileName) {
+                            await supabaseAdmin.storage
+                                .from("member-photos")
+                                .remove([oldFileName]);
+                            console.log(`Deleted old photo: ${oldFileName}`);
+                        }
+                    } catch (e) {
+                        console.error("Error deleting old photo:", e);
+                    }
+                }
             } else {
                 console.error("Photo upload error:", uploadError);
             }
@@ -546,12 +569,36 @@ export async function createTrainer(formData: FormData) {
 export async function deleteMember(id: string) {
     if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
     try {
+        // Fetch the member first to get the photo URL
+        const { data: member } = await supabaseAdmin
+            .from("members")
+            .select("photo_url")
+            .eq("id", id)
+            .single();
+
         const { error } = await supabaseAdmin
             .from("members")
             .delete()
             .eq("id", id);
 
         if (error) throw error;
+
+        // If the member had a photo, delete it from storage
+        if (member && member.photo_url) {
+            try {
+                const urlParts = member.photo_url.split('/');
+                const fileName = urlParts[urlParts.length - 1];
+                if (fileName) {
+                    await supabaseAdmin.storage
+                        .from("member-photos")
+                        .remove([fileName]);
+                    console.log(`Deleted photo for member ${id}: ${fileName}`);
+                }
+            } catch (e) {
+                console.error("Error deleting member photo:", e);
+            }
+        }
+
         revalidatePath("/admin/members");
         return { success: true };
     } catch (error: any) {
