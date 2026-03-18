@@ -173,59 +173,53 @@ export function Membership({ user }: { user?: any }) {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
-                            whileHover={{ scale: 1.03 }}
-                            className="relative"
+                            whileHover={{ scale: 1.02 }}
+                            className="relative group h-full"
                         >
                             {plan.featured && (
                                 <div className="absolute -top-4 left-0 right-0 flex justify-center z-20">
-                                    <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-primary/50">
+                                    <span className="bg-primary text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(229,9,20,0.5)]">
                                         Most Popular
                                     </span>
                                 </div>
                             )}
 
-                            <Card className={`h-full flex flex-col relative border-white/10 overflow-hidden ${plan.featured ? 'bg-zinc-900 ring-2 ring-primary ring-offset-2 ring-offset-black' : 'bg-black'}`}>
-                                <CardHeader>
-                                    <CardTitle className="text-2xl font-bold font-heading tracking-wider">{plan.name}</CardTitle>
-                                    <div className="mt-4 flex items-baseline">
-                                        <span className="text-4xl font-extrabold text-white">{plan.price}</span>
-                                        <span className="ml-2 text-sm text-muted-foreground">{plan.period}</span>
-                                    </div>
-                                    <CardDescription className="mt-2">{plan.description}</CardDescription>
-                                </CardHeader>
+                            {/* Saber Animated Neon Border Background */}
+                            <div className="relative h-full flex flex-col p-[2px] rounded-[16px] overflow-hidden bg-white/5 transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(229,9,20,0.3)]">
+                                {/* Glowing spinner effect block */}
+                                <div className="absolute inset-[-100%] opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_20%,#E50914_50%,transparent_80%,transparent_100%)] pointer-events-none" />
+                                
+                                <Card className={`flex-1 relative z-10 rounded-[14px] border-0 overflow-hidden flex flex-col justify-between ${plan.featured ? 'bg-[#111]' : 'bg-[#0a0a0a]'}`}>
+                                    <CardHeader className="pt-10 pb-4 text-center">
+                                        <CardTitle className="text-2xl font-bold font-heading tracking-widest text-zinc-100 mb-2">{plan.name}</CardTitle>
+                                        <div className="mt-6 mb-2">
+                                            <span className="text-5xl font-black text-white">{plan.price}</span>
+                                        </div>
+                                    </CardHeader>
 
-                                <CardContent className="flex-1">
-                                    <ul className="space-y-3">
-                                        {plan.features.map((feature, i) => (
-                                            <li key={i} className="flex items-start">
-                                                <Check className="w-5 h-5 text-primary mr-2 shrink-0" />
-                                                <span className="text-sm text-gray-300">{feature}</span>
-                                            </li>
-                                        ))}
-                                        {plan.notIncluded.map((feature, i) => (
-                                            <li key={i} className="flex items-start opacity-50">
-                                                <X className="w-5 h-5 text-gray-600 mr-2 shrink-0" />
-                                                <span className="text-sm text-gray-500">{feature}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </CardContent>
+                                    <CardContent className="flex-1 flex flex-col justify-start items-center text-center px-6">
+                                        <p className="text-lg font-medium text-primary mb-4">{plan.period.replace('/ ', '')}</p>
+                                        <p className="text-base text-zinc-400 max-w-[220px] leading-relaxed">
+                                            {plan.description}
+                                        </p>
+                                    </CardContent>
 
-                                <CardFooter>
-                                    <Button
-                                        variant={plan.featured ? "premium" : "outline"}
-                                        className="w-full h-12 text-lg font-bold uppercase tracking-wider hover:border-primary hover:text-primary hover:bg-transparent"
-                                        onClick={() => handleSubscribe(plan.name)}
-                                        disabled={loadingPlan === plan.name}
-                                    >
-                                        {loadingPlan === plan.name ? (
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                        ) : (
-                                            `Choose ${plan.name}`
-                                        )}
-                                    </Button>
-                                </CardFooter>
-                            </Card>
+                                    <CardFooter className="pb-8 px-6">
+                                        <Button
+                                            variant={plan.featured ? "premium" : "outline"}
+                                            className="w-full h-14 text-lg font-bold uppercase tracking-widest transition-all duration-300 group-hover:shadow-[0_0_20px_rgba(229,9,20,0.4)] group-hover:border-primary group-hover:bg-primary/10 group-hover:text-primary"
+                                            onClick={() => handleSubscribe(plan.name)}
+                                            disabled={loadingPlan === plan.name}
+                                        >
+                                            {loadingPlan === plan.name ? (
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                            ) : (
+                                                `Choose ${plan.name}`
+                                            )}
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            </div>
                         </motion.div>
                     ))}
                 </div>
