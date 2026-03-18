@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { User, CreditCard, Apple, Calendar, Phone, Shield } from "lucide-react";
 import { EditProfileDialog } from "@/components/dashboard/EditProfileDialog";
+import { LoginAgainButton } from "@/components/dashboard/LoginAgainButton";
 
 export default async function DashboardPage() {
     const session = await getSession();
@@ -33,9 +34,7 @@ export default async function DashboardPage() {
                 <div className="container mx-auto px-4 py-24 text-center">
                     <h1 className="text-3xl font-bold text-red-500 mb-4">Profile Not Found</h1>
                     <p className="text-zinc-400 mb-8">We couldn&apos;t load your profile. Please try logging in again.</p>
-                    <Link href="/login">
-                        <Button className="bg-red-600 hover:bg-red-700">Login Again</Button>
-                    </Link>
+                    <LoginAgainButton />
                 </div>
             </div>
         );
