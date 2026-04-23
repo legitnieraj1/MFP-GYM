@@ -21,9 +21,11 @@ import { getSession } from "@/lib/session";
 
 
 const PLAN_PRICES: Record<string, number> = {
-    BASIC: 3099,
-    PRO: 4699,
-    ELITE: 6699,
+    "1 MONTH": 1530,
+    "3 MONTHS": 4080,
+    "6 MONTHS": 5610,
+    "1 YEAR": 8160,
+    "2 YEARS": 12750,
 };
 
 export async function POST(req: Request) {

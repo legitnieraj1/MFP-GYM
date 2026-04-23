@@ -3,16 +3,22 @@ import { supabaseAdmin } from "@/lib/supabase";
 import crypto from "crypto";
 import { getSession } from "@/lib/session";
 
+// Total access months (paid + free bonus as shown on the price board)
 const PLAN_DURATIONS: Record<string, number> = {
-    BASIC: 3,
-    PRO: 6,
-    ELITE: 12,
+    "1 MONTH":  1,   // 1 month, no bonus
+    "3 MONTHS": 6,   // 3 paid + 3 free
+    "6 MONTHS": 12,  // 6 paid + 6 free
+    "1 YEAR":   24,  // 12 paid + 12 free
+    "2 YEARS":  48,  // 24 paid + 24 free
 };
 
+// Amounts charged via Razorpay (original price + 2% gateway fee)
 const PLAN_PRICES: Record<string, number> = {
-    BASIC: 3099,
-    PRO: 4699,
-    ELITE: 6699,
+    "1 MONTH":  1530,
+    "3 MONTHS": 4080,
+    "6 MONTHS": 5610,
+    "1 YEAR":   8160,
+    "2 YEARS":  12750,
 };
 
 export async function POST(req: Request) {
@@ -53,12 +59,13 @@ export async function POST(req: Request) {
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + durationMonths);
 
-        // Update membership dates directly on the members table
+        // Update membership dates + plan on the members table
         const { error: updateError } = await supabaseAdmin
             .from("members")
             .update({
                 membership_start: startDate.toISOString().split("T")[0],
                 membership_end: endDate.toISOString().split("T")[0],
+                membership_plan: plan,
             })
             .eq("id", userId);
 
