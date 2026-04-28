@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/purity */
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { getMembers, createMember, renewMembership, updateMember, getMemberDetails, updateMembershipDates, deleteMember } from "@/app/actions/admin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +36,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { Search, Plus, User as UserIcon, Loader2, MoreVertical, Bell } from "lucide-react";
+import { Search, Plus, User as UserIcon, Loader2, MoreVertical, Bell, Camera, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { openWhatsAppReminder } from "@/utils/whatsapp";
@@ -75,6 +75,61 @@ export default function MembersPage() {
     const [actionLoading, setActionLoading] = useState(false);
     const [renewPlan, setRenewPlan] = useState("BASIC");
     const [photoViewerUrl, setPhotoViewerUrl] = useState<string | null>(null);
+
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [capturedPhotoUrl, setCapturedPhotoUrl] = useState<string | null>(null);
+    const [capturedPhotoFile, setCapturedPhotoFile] = useState<File | null>(null);
+
+    const startCamera = async () => {
+        setIsCameraOpen(true);
+        setCapturedPhotoUrl(null);
+        setCapturedPhotoFile(null);
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            alert("Could not access camera. Please allow permissions.");
+            setIsCameraOpen(false);
+        }
+    };
+
+    const stopCamera = () => {
+        if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+        }
+        setIsCameraOpen(false);
+    };
+
+    const capturePhoto = () => {
+        if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext("2d");
+            if (context) {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL("image/jpeg");
+                setCapturedPhotoUrl(dataUrl);
+                
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const file = new File([blob], "webcam_photo.jpg", { type: "image/jpeg" });
+                        setCapturedPhotoFile(file);
+                    }
+                }, "image/jpeg");
+                
+                stopCamera();
+            }
+        }
+    };
 
     // Compute preview dates for renew dialog
     const renewPreview = useMemo(() => {
@@ -145,7 +200,12 @@ export default function MembersPage() {
         setSubmitLoading(true);
         const formData = new FormData(e.currentTarget);
 
-        const photoFile = formData.get("photo") as File;
+        let photoFile = formData.get("photo") as File;
+        if (capturedPhotoFile && (!photoFile || photoFile.size === 0)) {
+            formData.set("photo", capturedPhotoFile);
+            photoFile = capturedPhotoFile;
+        }
+
         if (photoFile && photoFile.size > 0) {
             try {
                 const options = {
@@ -209,7 +269,12 @@ export default function MembersPage() {
         setSubmitLoading(true);
         const formData = new FormData(e.currentTarget);
 
-        const photoFile = formData.get("photo") as File;
+        let photoFile = formData.get("photo") as File;
+        if (capturedPhotoFile && (!photoFile || photoFile.size === 0)) {
+            formData.set("photo", capturedPhotoFile);
+            photoFile = capturedPhotoFile;
+        }
+
         if (photoFile && photoFile.size > 0) {
             try {
                 const options = {
@@ -261,7 +326,7 @@ export default function MembersPage() {
                     <h1 className="text-3xl font-bold tracking-tight text-white">Members</h1>
                     <p className="text-muted-foreground">Manage your gym members and subscriptions.</p>
                 </div>
-                <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+                <Dialog open={isAddOpen} onOpenChange={(val) => { setIsAddOpen(val); if (!val) { setCapturedPhotoUrl(null); setCapturedPhotoFile(null); stopCamera(); } }}>
                     <DialogTrigger asChild>
                         <Button className="bg-[#E50914] hover:bg-[#E50914]/90 text-white shadow-[0_0_15px_-5px_#E50914]">
                             <Plus className="mr-2 h-4 w-4" /> Add New Member
@@ -296,13 +361,32 @@ export default function MembersPage() {
                             {/* Photo Upload */}
                             <div className="space-y-2">
                                 <Label>Member Photo</Label>
-                                <div className="flex items-center gap-4">
-                                    <Input
-                                        type="file"
-                                        name="photo"
-                                        accept="image/*"
-                                        className="bg-zinc-900 border-zinc-800 file:bg-[#E50914] file:text-white file:border-0 file:rounded-sm file:px-2 file:mr-4"
-                                    />
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex items-center gap-4">
+                                        <Input
+                                            type="file"
+                                            name="photo"
+                                            accept="image/*"
+                                            className="bg-zinc-900 border-zinc-800 file:bg-[#E50914] file:text-white file:border-0 file:rounded-sm file:px-2 file:mr-4"
+                                        />
+                                        <Button type="button" onClick={isCameraOpen ? stopCamera : startCamera} variant="outline" className="bg-zinc-900 border-zinc-800 text-white shrink-0">
+                                            {isCameraOpen ? <X className="w-4 h-4 mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
+                                            {isCameraOpen ? "Close Camera" : "Take Photo"}
+                                        </Button>
+                                    </div>
+                                    {isCameraOpen && (
+                                        <div className="flex flex-col items-center gap-2 bg-zinc-900 p-2 rounded-lg border border-zinc-800">
+                                            <video ref={videoRef} autoPlay playsInline className="w-full max-w-[300px] h-auto rounded-md bg-black" />
+                                            <canvas ref={canvasRef} className="hidden" />
+                                            <Button type="button" onClick={capturePhoto} className="bg-[#E50914] text-white w-full max-w-[300px]">Capture Photo</Button>
+                                        </div>
+                                    )}
+                                    {capturedPhotoUrl && !isCameraOpen && (
+                                        <div className="flex flex-col items-center gap-2">
+                                            <img src={capturedPhotoUrl} alt="Captured" className="w-full max-w-[150px] h-auto rounded-md border border-zinc-700" />
+                                            <Button type="button" onClick={() => { setCapturedPhotoUrl(null); setCapturedPhotoFile(null); startCamera(); }} variant="ghost" className="text-xs text-zinc-400">Retake Photo</Button>
+                                        </div>
+                                    )}
                                 </div>
                                 <p className="text-xs text-zinc-500">Upload from gallery or take a picture.</p>
                             </div>
@@ -605,7 +689,7 @@ export default function MembersPage() {
             </Dialog>
 
             {/* Edit Dialog */}
-            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+            <Dialog open={isEditOpen} onOpenChange={(val) => { setIsEditOpen(val); if (!val) { setCapturedPhotoUrl(null); setCapturedPhotoFile(null); stopCamera(); } }}>
                 <DialogContent className="bg-[#0A0A0A] border-zinc-800 text-white">
                     <DialogHeader>
                         <DialogTitle>Edit Member</DialogTitle>
@@ -624,13 +708,32 @@ export default function MembersPage() {
 
                         <div className="space-y-2">
                             <Label>Member Photo</Label>
-                            <div className="flex items-center gap-4">
-                                <Input
-                                    type="file"
-                                    name="photo"
-                                    accept="image/*"
-                                    className="bg-zinc-900 border-zinc-800 file:bg-[#E50914] file:text-white file:border-0 file:rounded-sm file:px-2 file:mr-4"
-                                />
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center gap-4">
+                                    <Input
+                                        type="file"
+                                        name="photo"
+                                        accept="image/*"
+                                        className="bg-zinc-900 border-zinc-800 file:bg-[#E50914] file:text-white file:border-0 file:rounded-sm file:px-2 file:mr-4"
+                                    />
+                                    <Button type="button" onClick={isCameraOpen ? stopCamera : startCamera} variant="outline" className="bg-zinc-900 border-zinc-800 text-white shrink-0">
+                                        {isCameraOpen ? <X className="w-4 h-4 mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
+                                        {isCameraOpen ? "Close Camera" : "Take Photo"}
+                                    </Button>
+                                </div>
+                                {isCameraOpen && (
+                                    <div className="flex flex-col items-center gap-2 bg-zinc-900 p-2 rounded-lg border border-zinc-800">
+                                        <video ref={videoRef} autoPlay playsInline className="w-full max-w-[300px] h-auto rounded-md bg-black" />
+                                        <canvas ref={canvasRef} className="hidden" />
+                                        <Button type="button" onClick={capturePhoto} className="bg-[#E50914] text-white w-full max-w-[300px]">Capture Photo</Button>
+                                    </div>
+                                )}
+                                {capturedPhotoUrl && !isCameraOpen && (
+                                    <div className="flex flex-col items-center gap-2">
+                                        <img src={capturedPhotoUrl} alt="Captured" className="w-full max-w-[150px] h-auto rounded-md border border-zinc-700" />
+                                        <Button type="button" onClick={() => { setCapturedPhotoUrl(null); setCapturedPhotoFile(null); startCamera(); }} variant="ghost" className="text-xs text-zinc-400">Retake Photo</Button>
+                                    </div>
+                                )}
                             </div>
                             <p className="text-xs text-zinc-500">Upload new photo (leaves existing if empty).</p>
                         </div>
@@ -681,6 +784,7 @@ export default function MembersPage() {
             {/* Photo Viewer Dialog */}
             <Dialog open={!!photoViewerUrl} onOpenChange={(open) => !open && setPhotoViewerUrl(null)}>
                 <DialogContent className="bg-transparent border-none p-0 max-w-4xl flex justify-center items-center shadow-none">
+                    <DialogTitle className="sr-only">Photo Viewer</DialogTitle>
                     {photoViewerUrl && (
                         <img 
                             src={photoViewerUrl} 
