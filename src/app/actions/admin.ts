@@ -156,7 +156,18 @@ export async function createMember(formData: FormData) {
             });
 
 
-        if (memberError) throw memberError;
+        if (memberError) {
+            if (memberError.code === '23505') {
+                if (memberError.message.includes('members_mobile_key')) {
+                    return { success: false, error: "A member with this mobile number already exists." };
+                }
+                if (memberError.message.includes('members_enroll_no_key')) {
+                    return { success: false, error: "A member with this enroll number already exists." };
+                }
+                return { success: false, error: "A member with this information already exists." };
+            }
+            throw memberError;
+        }
 
         revalidatePath("/admin/members");
         return { success: true };
@@ -335,7 +346,18 @@ export async function updateMember(memberId: string, formData: FormData) {
             .update(updateData)
             .eq("id", memberId);
 
-        if (error) throw error;
+        if (error) {
+            if (error.code === '23505') {
+                if (error.message.includes('members_mobile_key')) {
+                    return { success: false, error: "A member with this mobile number already exists." };
+                }
+                if (error.message.includes('members_enroll_no_key')) {
+                    return { success: false, error: "A member with this enroll number already exists." };
+                }
+                return { success: false, error: "A member with this information already exists." };
+            }
+            throw error;
+        }
 
         revalidatePath("/admin/members");
         return { success: true };
