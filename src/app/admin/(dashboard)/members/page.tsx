@@ -50,6 +50,10 @@ type Member = {
     phone: string;
     photo: string | null;
     enroll_no?: string | null;
+    age?: number | null;
+    dob?: string | null;
+    weight?: number | null;
+    height?: number | null;
     membership: {
         plan: string;
         status: string;
@@ -741,19 +745,19 @@ export default function MembersPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Age (Optional)</Label>
-                                <Input name="age" type="number" defaultValue={(selectedMember as any)?.age || ""} placeholder="Enter age" className="bg-zinc-900 border-zinc-800" />
+                                <Input name="age" type="number" defaultValue={selectedMember?.age || ""} placeholder="Enter age" className="bg-zinc-900 border-zinc-800" />
                             </div>
                             <div className="space-y-2">
                                 <Label>Date of Birth (DD/MM/YYYY)</Label>
-                                <Input name="dob_display" type="text" pattern="\d{2}/\d{2}/\d{4}" placeholder="DD/MM/YYYY" defaultValue={(selectedMember as any)?.dob ? new Date((selectedMember as any).dob).toLocaleDateString("en-GB") : ""} className="bg-zinc-900 border-zinc-800" />
+                                <Input name="dob_display" type="text" pattern="\d{2}/\d{2}/\d{4}" placeholder="DD/MM/YYYY" defaultValue={selectedMember?.dob ? new Date(selectedMember.dob).toLocaleDateString("en-GB") : ""} className="bg-zinc-900 border-zinc-800" />
                             </div>
                             <div className="space-y-2">
                                 <Label>Weight (kg)</Label>
-                                <Input name="weight" type="number" step="0.1" defaultValue={(selectedMember as any)?.weight || ""} placeholder="Enter weight in kg" className="bg-zinc-900 border-zinc-800" />
+                                <Input name="weight" type="number" step="0.1" defaultValue={selectedMember?.weight || ""} placeholder="Enter weight in kg" className="bg-zinc-900 border-zinc-800" />
                             </div>
                             <div className="space-y-2">
                                 <Label>Height (cm)</Label>
-                                <Input name="height" type="number" defaultValue={(selectedMember as any)?.height || ""} placeholder="Enter height in cm" className="bg-zinc-900 border-zinc-800" />
+                                <Input name="height" type="number" defaultValue={selectedMember?.height || ""} placeholder="Enter height in cm" className="bg-zinc-900 border-zinc-800" />
                             </div>
                         </div>
                         <div className="space-y-2">

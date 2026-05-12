@@ -53,6 +53,10 @@ export async function getMembers() {
                 phone: member.mobile,
                 photo: member.photo_url || null, // Getting photo from table
                 enroll_no: member.enroll_no || null,
+                age: member.age || null,
+                dob: member.dob || null,
+                weight: member.weight || null,
+                height: member.height || null,
                 membership: member.membership_end ? {
                     plan: plan,
                     status: isActive ? "ACTIVE" : "EXPIRED",
