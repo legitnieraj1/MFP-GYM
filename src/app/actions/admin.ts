@@ -279,6 +279,7 @@ export async function updateMember(memberId: string, formData: FormData) {
     try {
         const name = formData.get("name") as string;
         const phone = formData.get("phone") as string;
+        const enrollNo = formData.get("enroll_no") as string;
         const age = formData.get("age") ? Number(formData.get("age")) : null;
         const weight = formData.get("weight") ? Number(formData.get("weight")) : null;
         const height = formData.get("height") ? Number(formData.get("height")) : null;
@@ -304,6 +305,11 @@ export async function updateMember(memberId: string, formData: FormData) {
             height,
             dob
         };
+
+        if (enrollNo) {
+            updateData.enroll_no = enrollNo;
+            updateData.pin_hash = await hashPin(enrollNo);
+        }
 
         if (photoFile && photoFile.size > 0) {
             const fileExt = photoFile.name.split('.').pop();

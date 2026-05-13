@@ -711,6 +711,12 @@ export default function MembersPage() {
                         </div>
 
                         <div className="space-y-2">
+                            <Label>Enroll Number (PIN)</Label>
+                            <Input name="enroll_no" defaultValue={selectedMember?.enroll_no || ""} required className="bg-zinc-900 border-zinc-800" />
+                        </div>
+
+
+                        <div className="space-y-2">
                             <Label>Member Photo</Label>
                             <div className="flex flex-col gap-4">
                                 <div className="flex items-center gap-4">
