@@ -133,18 +133,7 @@ export default function ScrollyCanvasHero() {
 
     return (
         <div ref={containerRef} className="relative h-[500vh] bg-black">
-            {!isLoaded && (
-                <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-                    <video
-                        src="/Animation - 1712217414998.webm"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className="w-full max-w-xs md:max-w-sm object-contain"
-                    />
-                </div>
-            )}
+
 
             <div className="sticky top-0 h-screen w-full overflow-hidden">
                 <canvas

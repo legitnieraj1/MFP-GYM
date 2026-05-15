@@ -8,7 +8,7 @@ import { ArrowRight } from "lucide-react";
 
 export default function MobileHero() {
     const ref = useRef(null);
-    const [showContent, setShowContent] = useState(false);
+    const [showContent, setShowContent] = useState(true);
 
     // We only want this hook to run/be effective if the component is actually visible/mounted
     // But since hooks are unconditional, we rely on the parent to unmount this component on Desktop.

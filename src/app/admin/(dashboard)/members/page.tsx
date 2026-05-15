@@ -694,7 +694,7 @@ export default function MembersPage() {
 
             {/* Edit Dialog */}
             <Dialog open={isEditOpen} onOpenChange={(val) => { setIsEditOpen(val); if (!val) { setCapturedPhotoUrl(null); setCapturedPhotoFile(null); stopCamera(); } }}>
-                <DialogContent className="bg-[#0A0A0A] border-zinc-800 text-white">
+                <DialogContent className="bg-[#0A0A0A] border-zinc-800 text-white max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Edit Member</DialogTitle>
                     </DialogHeader>
