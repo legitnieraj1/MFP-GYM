@@ -6,8 +6,8 @@ export type AuthUser = {
     id: string;
     name: string;
     mobile: string;
-    membership_type?: string;
-    membership_expiry?: string;
+    membership_start?: string;
+    membership_end?: string;
     role: string;
 };
 

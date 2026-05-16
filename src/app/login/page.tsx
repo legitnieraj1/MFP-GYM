@@ -4,7 +4,6 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2, Smartphone, Lock, ArrowRight } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +20,6 @@ import { motion } from "framer-motion";
 function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { refresh } = useAuth();
     // Where to go after a successful login (e.g. /attendance/tap from NFC redirect)
     const redirectTo = searchParams.get("redirect") || "/dashboard";
 
@@ -50,8 +48,6 @@ function LoginForm() {
             if (!res.ok) {
                 throw new Error(data.error || "Login failed");
             }
-
-            await refresh();
 
             // Refresh server state then navigate to the original destination
             router.refresh();

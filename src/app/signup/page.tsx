@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2, Smartphone, Lock, User, Calendar, ArrowRight } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +12,6 @@ import { motion } from "framer-motion";
 
 export default function SignupPage() {
     const router = useRouter();
-    const { refresh } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const [formData, setFormData] = useState({
@@ -63,8 +61,6 @@ export default function SignupPage() {
             if (!res.ok) {
                 throw new Error(data.error || "Signup failed");
             }
-
-            await refresh();
 
             // Force refresh to update server components
             router.refresh();

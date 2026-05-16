@@ -25,7 +25,7 @@ export default function TapPage() {
         // Wait until the auth context has resolved before doing anything
         if (authLoading) return;
 
-        // If not authenticated, middleware should have already redirected to /login.
+        // If not authenticated, proxy.ts should have already redirected to /login.
         // This is a belt-and-suspenders fallback for any edge cases.
         if (!isAuthenticated) {
             router.replace("/login?redirect=/attendance/tap");

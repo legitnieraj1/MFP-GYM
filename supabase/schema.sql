@@ -116,7 +116,7 @@ create policy "Admins can update memberships"
 -- ATTENDANCE TABLE
 create table public.attendance (
   id uuid default uuid_generate_v4() primary key,
-  user_id uuid references public.users(id) on delete cascade not null,
+  user_id uuid references public.members(id) on delete cascade not null,
   check_in_time timestamp with time zone default timezone('utc'::text, now()) not null,
   date date default CURRENT_DATE not null
 );
