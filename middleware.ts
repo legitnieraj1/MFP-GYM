@@ -5,7 +5,7 @@ import { decrypt } from "@/lib/session";
 const protectedRoutes = ["/dashboard", "/admin", "/attendance"];
 const authRoutes = ["/login", "/signup"];
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
     const path = req.nextUrl.pathname;
     const isProtectedRoute =
         protectedRoutes.some((r) => path.startsWith(r)) && path !== "/admin/login";
