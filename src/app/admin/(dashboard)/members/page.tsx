@@ -81,17 +81,24 @@ export default function MembersPage() {
     const [photoViewerUrl, setPhotoViewerUrl] = useState<string | null>(null);
 
     const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [capturedPhotoUrl, setCapturedPhotoUrl] = useState<string | null>(null);
     const [capturedPhotoFile, setCapturedPhotoFile] = useState<File | null>(null);
 
-    const startCamera = async () => {
+    const startCamera = async (mode: "user" | "environment" = "user") => {
         setIsCameraOpen(true);
+        setFacingMode(mode);
         setCapturedPhotoUrl(null);
         setCapturedPhotoFile(null);
+        // Stop any existing stream before starting a new one
+        if (videoRef.current && videoRef.current.srcObject) {
+            const existing = videoRef.current.srcObject as MediaStream;
+            existing.getTracks().forEach(track => track.stop());
+        }
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: mode } });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
@@ -100,6 +107,11 @@ export default function MembersPage() {
             alert("Could not access camera. Please allow permissions.");
             setIsCameraOpen(false);
         }
+    };
+
+    const switchCamera = () => {
+        const newMode = facingMode === "user" ? "environment" : "user";
+        startCamera(newMode);
     };
 
     const stopCamera = () => {
@@ -382,7 +394,12 @@ export default function MembersPage() {
                                         <div className="flex flex-col items-center gap-2 bg-zinc-900 p-2 rounded-lg border border-zinc-800">
                                             <video ref={videoRef} autoPlay playsInline className="w-full max-w-[300px] h-auto rounded-md bg-black" />
                                             <canvas ref={canvasRef} className="hidden" />
-                                            <Button type="button" onClick={capturePhoto} className="bg-[#E50914] text-white w-full max-w-[300px]">Capture Photo</Button>
+                                            <div className="flex gap-2 w-full max-w-[300px]">
+                                                <Button type="button" onClick={capturePhoto} className="bg-[#E50914] text-white flex-1">Capture Photo</Button>
+                                                <Button type="button" onClick={switchCamera} variant="outline" className="bg-zinc-800 border-zinc-700 text-white shrink-0 px-3" title={facingMode === "user" ? "Switch to rear camera" : "Switch to front camera"}>
+                                                    {facingMode === "user" ? "🔄 Rear" : "🔄 Front"}
+                                                </Button>
+                                            </div>
                                         </div>
                                     )}
                                     {capturedPhotoUrl && !isCameraOpen && (
@@ -735,7 +752,12 @@ export default function MembersPage() {
                                     <div className="flex flex-col items-center gap-2 bg-zinc-900 p-2 rounded-lg border border-zinc-800">
                                         <video ref={videoRef} autoPlay playsInline className="w-full max-w-[300px] h-auto rounded-md bg-black" />
                                         <canvas ref={canvasRef} className="hidden" />
-                                        <Button type="button" onClick={capturePhoto} className="bg-[#E50914] text-white w-full max-w-[300px]">Capture Photo</Button>
+                                        <div className="flex gap-2 w-full max-w-[300px]">
+                                            <Button type="button" onClick={capturePhoto} className="bg-[#E50914] text-white flex-1">Capture Photo</Button>
+                                            <Button type="button" onClick={switchCamera} variant="outline" className="bg-zinc-800 border-zinc-700 text-white shrink-0 px-3" title={facingMode === "user" ? "Switch to rear camera" : "Switch to front camera"}>
+                                                {facingMode === "user" ? "🔄 Rear" : "🔄 Front"}
+                                            </Button>
+                                        </div>
                                     </div>
                                 )}
                                 {capturedPhotoUrl && !isCameraOpen && (

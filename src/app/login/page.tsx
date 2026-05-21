@@ -133,7 +133,9 @@ function LoginForm() {
                                     </>
                                 ) : (
                                     <>
-                                        Login to Dashboard{" "}
+                                        {redirectTo.includes("attendance")
+                                            ? "Login & Mark Attendance"
+                                            : "Login to Dashboard"}{" "}
                                         <ArrowRight className="ml-2 h-4 w-4" />
                                     </>
                                 )}
