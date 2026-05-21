@@ -1,15 +1,13 @@
 "use server";
 
 import { supabaseAdmin } from "@/lib/supabase";
-
-import { getSession } from "@/lib/auth"; // Import custom session getter
+import { getSession } from "@/lib/auth";
 
 export async function markAttendance() {
     if (!supabaseAdmin) {
         return { success: false, error: "Server configuration error" };
     }
 
-    // 1. Check Authentication using custom session
     const session = await getSession();
     if (!session || !session.userId) {
         return { success: false, error: "Not authenticated" };
@@ -17,78 +15,64 @@ export async function markAttendance() {
     const userId = session.userId;
 
     try {
-        // 2. Check for existing record for today
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const nowISO = new Date().toISOString();
+        const nowTime = new Date().toLocaleTimeString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true,
+        });
 
-        const { data: existingRecord, error: fetchError } = await supabaseAdmin
-            .from('attendance')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('date', today)
-            .single();
+        // Single query: fetch today's attendance record AND member name together
+        const [attendanceResult, profileResult] = await Promise.all([
+            supabaseAdmin
+                .from('attendance')
+                .select('id, check_out_time')
+                .eq('user_id', userId)
+                .eq('date', today)
+                .maybeSingle(),
+            supabaseAdmin
+                .from('members')
+                .select('name')
+                .eq('id', userId)
+                .single(),
+        ]);
 
-        if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows found
-            console.error("Fetch error:", fetchError);
+        if (attendanceResult.error && attendanceResult.error.code !== 'PGRST116') {
+            console.error("Fetch error:", attendanceResult.error);
             return { success: false, error: "Failed to fetch attendance" };
         }
 
+        const existingRecord = attendanceResult.data;
+        const name = profileResult.data?.name;
+
         if (existingRecord) {
-            // 3. If checked in but not checked out -> Check Out
             if (!existingRecord.check_out_time) {
+                // Checked in but not out → Check Out
                 const { error: updateError } = await supabaseAdmin
                     .from('attendance')
-                    .update({ check_out_time: new Date().toISOString() })
+                    .update({ check_out_time: nowISO })
                     .eq('id', existingRecord.id);
 
                 if (updateError) throw updateError;
 
-                // Get user name for better UX from MEMBERS table
-                const { data: profile } = await supabaseAdmin.from('members').select('name').eq('id', userId).single();
-
-                return {
-                    success: true,
-                    status: 'CHECK_OUT',
-                    name: profile?.name,
-                    time: new Date().toLocaleTimeString('en-US', {
-                        timeZone: 'Asia/Kolkata',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                        hour12: true
-                    })
-                };
+                return { success: true, status: 'CHECK_OUT', name, time: nowTime };
             } else {
-                // Already checked out
-                const { data: profile } = await supabaseAdmin.from('members').select('name').eq('id', userId).single();
-                return { success: true, status: 'ALREADY_COMPLETED', name: profile?.name };
+                // Already fully done for today
+                return { success: true, status: 'ALREADY_COMPLETED', name };
             }
         } else {
-            // 4. No record -> Check In
+            // No record → Check In
             const { error: insertError } = await supabaseAdmin
                 .from('attendance')
-                .insert({
-                    user_id: userId,
-                    check_in_time: new Date().toISOString(),
-                    date: today
-                });
+                .insert({ user_id: userId, check_in_time: nowISO, date: today });
 
             if (insertError) throw insertError;
 
-            const { data: profile } = await supabaseAdmin.from('members').select('name').eq('id', userId).single();
-            return {
-                success: true,
-                status: 'CHECK_IN',
-                name: profile?.name,
-                time: new Date().toLocaleTimeString('en-US', {
-                    timeZone: 'Asia/Kolkata',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: true
-                })
-            };
+            return { success: true, status: 'CHECK_IN', name, time: nowTime };
         }
-
     } catch (error: any) {
         console.error("Attendance error:", error);
         return { success: false, error: error.message || "Failed to mark attendance" };
@@ -103,7 +87,6 @@ export async function autoCheckoutOldSessions() {
     const today = new Date().toISOString().split('T')[0];
 
     try {
-        // Find active sessions for today that started more than 3 hours ago
         const { data: staleSessions, error: fetchError } = await supabaseAdmin
             .from('attendance')
             .select('id, check_in_time')
@@ -119,7 +102,6 @@ export async function autoCheckoutOldSessions() {
         if (staleSessions && staleSessions.length > 0) {
             console.log(`Auto-checking out ${staleSessions.length} stale sessions...`);
 
-            // Update each session
             for (const session of staleSessions) {
                 const checkInTime = new Date(session.check_in_time);
                 const autoCheckOutTime = new Date(checkInTime.getTime() + 3 * 60 * 60 * 1000);

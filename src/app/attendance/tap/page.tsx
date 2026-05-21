@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { markAttendance } from "@/app/actions/attendance";
-import { useAuth } from "@/context/AuthContext";
 import { Loader2, CheckCircle, LogOut, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -12,7 +11,6 @@ type TapStatus = "LOADING" | "SUCCESS" | "ERROR";
 
 export default function TapPage() {
     const router = useRouter();
-    const { isLoading: authLoading, isAuthenticated } = useAuth();
     const [status, setStatus] = useState<TapStatus>("LOADING");
     const [message, setMessage] = useState("");
     const [details, setDetails] = useState<{
@@ -21,39 +19,40 @@ export default function TapPage() {
         time?: string;
     } | null>(null);
 
-    useEffect(() => {
-        // Wait until the auth context has resolved before doing anything
-        if (authLoading) return;
+    // Prevent double-fire in React Strict Mode
+    const hasFired = useRef(false);
 
-        // If not authenticated, proxy.ts should have already redirected to /login.
-        // This is a belt-and-suspenders fallback for any edge cases.
-        if (!isAuthenticated) {
-            router.replace("/login?redirect=/attendance/tap");
-            return;
-        }
-
-        const processTap = async () => {
-            try {
-                const res = await markAttendance();
-                if (res.success && res.status) {
-                    setStatus("SUCCESS");
-                    setDetails({
-                        type: res.status,
-                        name: res.name || "Member",
-                        time: res.time,
-                    });
-                } else {
-                    setStatus("ERROR");
-                    setMessage(res.error || "Something went wrong");
-                }
-            } catch {
+    const processTap = async () => {
+        try {
+            const res = await markAttendance();
+            if (res.success && res.status) {
+                setStatus("SUCCESS");
+                setDetails({
+                    type: res.status,
+                    name: res.name || "Member",
+                    time: res.time,
+                });
+            } else if (res.error === "Not authenticated") {
+                // Middleware should have caught this, but just in case
+                router.replace("/login?redirect=/attendance/tap");
+            } else {
                 setStatus("ERROR");
-                setMessage("Network error — please try again");
+                setMessage(res.error || "Something went wrong");
             }
-        };
+        } catch {
+            setStatus("ERROR");
+            setMessage("Network error — please try again");
+        }
+    };
 
+    useEffect(() => {
+        // Middleware already guarantees the user is authenticated if they reach here.
+        // Fire immediately — no need to wait for AuthContext's /api/auth/me round trip.
+        if (hasFired.current) return;
+        hasFired.current = true;
         processTap();
-    }, [authLoading, isAuthenticated, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (status === "LOADING") {
         return (
@@ -88,19 +87,7 @@ export default function TapPage() {
                         onClick={() => {
                             setStatus("LOADING");
                             setMessage("");
-                            markAttendance().then((res) => {
-                                if (res.success && res.status) {
-                                    setStatus("SUCCESS");
-                                    setDetails({
-                                        type: res.status,
-                                        name: res.name || "Member",
-                                        time: res.time,
-                                    });
-                                } else {
-                                    setStatus("ERROR");
-                                    setMessage(res.error || "Something went wrong");
-                                }
-                            });
+                            processTap();
                         }}
                     >
                         Retry
