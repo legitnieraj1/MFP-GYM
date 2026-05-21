@@ -385,7 +385,7 @@ export default function MembersPage() {
                                             accept="image/*"
                                             className="bg-zinc-900 border-zinc-800 file:bg-[#E50914] file:text-white file:border-0 file:rounded-sm file:px-2 file:mr-4"
                                         />
-                                        <Button type="button" onClick={isCameraOpen ? stopCamera : startCamera} variant="outline" className="bg-zinc-900 border-zinc-800 text-white shrink-0">
+                                        <Button type="button" onClick={isCameraOpen ? stopCamera : () => startCamera()} variant="outline" className="bg-zinc-900 border-zinc-800 text-white shrink-0">
                                             {isCameraOpen ? <X className="w-4 h-4 mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
                                             {isCameraOpen ? "Close Camera" : "Take Photo"}
                                         </Button>
@@ -743,7 +743,7 @@ export default function MembersPage() {
                                         accept="image/*"
                                         className="bg-zinc-900 border-zinc-800 file:bg-[#E50914] file:text-white file:border-0 file:rounded-sm file:px-2 file:mr-4"
                                     />
-                                    <Button type="button" onClick={isCameraOpen ? stopCamera : startCamera} variant="outline" className="bg-zinc-900 border-zinc-800 text-white shrink-0">
+                                    <Button type="button" onClick={isCameraOpen ? stopCamera : () => startCamera()} variant="outline" className="bg-zinc-900 border-zinc-800 text-white shrink-0">
                                         {isCameraOpen ? <X className="w-4 h-4 mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
                                         {isCameraOpen ? "Close Camera" : "Take Photo"}
                                     </Button>
