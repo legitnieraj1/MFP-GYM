@@ -29,7 +29,7 @@ export async function markAttendance() {
         const [attendanceResult, profileResult] = await Promise.all([
             supabaseAdmin
                 .from('attendance')
-                .select('id, check_out_time')
+                .select('id, check_in_time, check_out_time')
                 .eq('user_id', userId)
                 .eq('date', today)
                 .maybeSingle(),
@@ -51,6 +51,18 @@ export async function markAttendance() {
         if (existingRecord) {
             if (!existingRecord.check_out_time) {
                 // Checked in but not out → Check Out
+
+                // Enforce 15-minute cooldown before checkout
+                if (existingRecord.check_in_time) {
+                    const checkInTime = new Date(existingRecord.check_in_time);
+                    const now = new Date(nowISO);
+                    const diffMinutes = (now.getTime() - checkInTime.getTime()) / (1000 * 60);
+
+                    if (diffMinutes < 15) {
+                        return { success: true, status: 'COOLDOWN', name, time: nowTime };
+                    }
+                }
+
                 const { error: updateError } = await supabaseAdmin
                     .from('attendance')
                     .update({ check_out_time: nowISO })

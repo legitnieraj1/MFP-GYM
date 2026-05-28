@@ -98,7 +98,11 @@ export default function TapPage() {
     }
 
     const isCheckIn = details?.type === "CHECK_IN";
-    const color = isCheckIn ? "green" : "blue";
+    const isCooldown = details?.type === "COOLDOWN";
+    
+    let color = "blue";
+    if (isCheckIn) color = "green";
+    if (isCooldown) color = "yellow";
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4 text-center relative overflow-hidden">
@@ -111,24 +115,32 @@ export default function TapPage() {
             >
                 {isCheckIn ? (
                     <CheckCircle className={`h-16 w-16 text-${color}-500`} />
+                ) : isCooldown ? (
+                    <CheckCircle className={`h-16 w-16 text-${color}-500`} />
                 ) : (
                     <LogOut className={`h-16 w-16 text-${color}-500`} />
                 )}
             </div>
 
             <h1 className="text-5xl font-bebas mb-2 uppercase">
-                {isCheckIn ? "Welcome!" : "Goodbye!"}
+                {isCheckIn ? "Welcome!" : isCooldown ? "Already Checked In" : "Goodbye!"}
             </h1>
             <h2 className="text-2xl font-bold text-zinc-300 mb-4">{details?.name}</h2>
 
             <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 px-8 py-4 rounded-xl mb-8">
                 <p className="text-zinc-500 text-sm uppercase tracking-widest mb-1">
-                    {isCheckIn ? "Check In Time" : "Check Out Time"}
+                    {isCheckIn ? "Check In Time" : isCooldown ? "Checked In At" : "Check Out Time"}
                 </p>
                 <p className="text-3xl font-mono text-white">
                     {details?.time || new Date().toLocaleTimeString()}
                 </p>
             </div>
+
+            {isCooldown && (
+                <p className="text-zinc-400 bg-zinc-900/80 px-4 py-3 rounded-lg mb-8 border border-zinc-800">
+                    You are already checked in.
+                </p>
+            )}
 
             {details?.type === "ALREADY_COMPLETED" && (
                 <p className="text-zinc-500 bg-zinc-900 px-4 py-2 rounded-lg mb-8">
