@@ -7,6 +7,7 @@ import { getMembers, getAttendance, getPayments } from "@/app/actions/admin";
 
 import { useRouter } from "next/navigation";
 import { openWhatsAppReminder } from "@/utils/whatsapp";
+import TodaysBirthdays from "@/components/admin/TodaysBirthdays";
 
 export default function AdminDashboard() {
     const router = useRouter();
@@ -271,6 +272,12 @@ export default function AdminDashboard() {
                         </div>
                     </CardContent>
                 </Card>
+            </div>
+
+            {/* Birthday Wishes Row */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                <div className="col-span-4" />
+                <TodaysBirthdays />
             </div>
         </div>
     );

@@ -655,3 +655,48 @@ export async function deleteTrainer(id: string) {
         return { success: false, error: error.message };
     }
 }
+
+export async function getTodaysBirthdays() {
+    if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
+
+    try {
+        // Fetch all members who have a dob set
+        const { data, error } = await supabaseAdmin
+            .from("members")
+            .select("id, name, mobile, dob, photo_url")
+            .not("dob", "is", null);
+
+        if (error) throw error;
+
+        // Get today's day and month in IST
+        const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+        const todayMonth = now.getMonth() + 1; // 1-12
+        const todayDay = now.getDate();
+
+        const birthdays = (data || [])
+            .filter((member) => {
+                if (!member.dob) return false;
+                // dob is stored as YYYY-MM-DD
+                const [year, month, day] = member.dob.split("-").map(Number);
+                return month === todayMonth && day === todayDay;
+            })
+            .map((member) => {
+                const [year] = member.dob.split("-").map(Number);
+                const age = now.getFullYear() - year;
+                return {
+                    id: member.id,
+                    name: member.name,
+                    phone: member.mobile || "",
+                    photo: member.photo_url || null,
+                    age,
+                    dob: member.dob,
+                };
+            });
+
+        return { success: true, data: birthdays };
+    } catch (error: any) {
+        console.error("Failed to fetch birthdays:", error);
+        return { success: false, error: error.message };
+    }
+}
+

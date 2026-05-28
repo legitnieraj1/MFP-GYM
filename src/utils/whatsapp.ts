@@ -24,3 +24,25 @@ Kindly renew your fee to continue your fitness journey.
 
     window.open(whatsappUrl, '_blank');
 }
+
+export function openWhatsAppBirthdayWish(member: { name: string; phone: string }) {
+    if (!member || !member.phone) return;
+
+    let phone = member.phone.trim().replace(/\+/g, '').replace(/\s+/g, '');
+
+    const message = `Happy Birthday ${member.name} 🎉🔥
+
+Wishing you strength, happiness, discipline and great health ahead.
+
+Keep pushing, keep hustling and keep becoming the strongest version of yourself 💪
+
+Have an amazing year ahead!
+
+Regards,
+Team MFP Gym ❤️`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+
+    window.open(whatsappUrl, '_blank');
+}
