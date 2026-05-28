@@ -30,19 +30,23 @@ export function openWhatsAppBirthdayWish(member: { name: string; phone: string }
 
     let phone = member.phone.trim().replace(/\+/g, '').replace(/\s+/g, '');
 
-    const message = `Happy Birthday ${member.name} 🎉🔥
+    // Emojis as Unicode escapes to prevent any encoding corruption
+    const party    = '\uD83C\uDF89'; // 🎉
+    const fire     = '\uD83D\uDD25'; // 🔥
+    const muscle   = '\uD83D\uDCAA'; // 💪
+    const heart    = '\u2764\uFE0F'; // ❤️
 
-Wishing you strength, happiness, discipline and great health ahead.
-
-Keep pushing, keep hustling and keep becoming the strongest version of yourself 💪
-
-Have an amazing year ahead!
-
-Regards,
-Team MFP Gym ❤️`;
+    const message =
+        `Happy Birthday ${member.name} ${party}${fire}\n\n` +
+        `Wishing you strength, happiness, discipline and great health ahead.\n\n` +
+        `Keep pushing, keep hustling and keep becoming the strongest version of yourself ${muscle}\n\n` +
+        `Have an amazing year ahead!\n\n` +
+        `Regards,\n` +
+        `Team MFP Gym ${heart}`;
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
 
     window.open(whatsappUrl, '_blank');
 }
+
