@@ -2,25 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dumbbell, Target, Users } from "lucide-react";
-
-const features = [
-    {
-        icon: <Dumbbell className="w-8 h-8 text-primary" />,
-        title: "Premium Equipment",
-        description: "State-of-the-art machinery for every muscle group.",
-    },
-    {
-        icon: <Users className="w-8 h-8 text-primary" />,
-        title: "Expert Trainers",
-        description: "Certified coaches to guide your transformation.",
-    },
-    {
-        icon: <Target className="w-8 h-8 text-primary" />,
-        title: "Personalized Plans",
-        description: "AI-driven diet and workout plans tailored to you.",
-    },
-];
 
 const images = [
     "/unnamed (1).webp",
@@ -28,6 +9,12 @@ const images = [
     "/unnamed (3).webp",
     "/unnamed (4).webp",
     "/unnamed (5).webp",
+];
+
+const stats = [
+    { value: "800+", label: "Active Members" },
+    { value: "3+", label: "Years Running" },
+    { value: "4", label: "Certified Trainers" },
 ];
 
 export function About() {
@@ -41,66 +28,145 @@ export function About() {
     }, []);
 
     return (
-        <section className="py-24 bg-black relative" id="about">
-            {/* Background Texture */}
-            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-800 via-black to-black pointer-events-none" />
-
+        <section className="py-20 md:py-32 bg-black relative" id="about">
             <div className="container mx-auto px-4 relative z-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-                    {/* Animated Text */}
+                {/* Top: editorial intro */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+                    {/* Text column — spans 7 */}
                     <motion.div
-                        initial={{ opacity: 0, x: -50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
+                        initial={{ opacity: 0, y: 24 }}
+                        whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.8 }}
+                        transition={{ duration: 0.6 }}
+                        className="lg:col-span-7 flex flex-col"
                     >
-                        <h2 className="text-4xl md:text-6xl font-heading font-bold text-white mb-6">
-                            BEST GYM IN <span className="text-primary">PERIYANAICKENPALAYAM</span>
-                        </h2>
-                        <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                            MFP Gym (Team MFP) is the top-rated gym in Periyanaickenpalayam, Coimbatore — a community of athletes, bodybuilders, and fitness enthusiasts committed to discipline, growth, and excellence. Whether you&apos;re looking for the best gym in Periyanaickenpalayam or a complete body transformation, we provide the environment, equipment, and expert trainers to help you push past your limits.
-                        </p>
+                        {/* Eyebrow */}
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-zinc-500 mb-4">
+                            About the gym
+                        </span>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                            {features.map((feature, index) => (
+                        <h2 className="text-3xl sm:text-4xl md:text-[3.25rem] md:leading-[1.1] font-heading font-bold text-white mb-6">
+                            WHERE DISCIPLINE{" "}
+                            <span className="text-primary">MEETS RESULTS</span>
+                        </h2>
+
+                        <div className="space-y-4 mb-10">
+                            <p className="text-base md:text-lg text-zinc-400 leading-relaxed max-w-2xl">
+                                MFP Gym has been Periyanaickenpalayam&apos;s go-to training ground for over three years.
+                                What started as a small local gym has grown into a full-fledged fitness community —
+                                athletes, bodybuilders, working professionals, all training under one roof.
+                            </p>
+                            <p className="text-base md:text-lg text-zinc-400 leading-relaxed max-w-2xl">
+                                We don&apos;t do gimmicks. The equipment is heavy, the trainers know their craft,
+                                and the results speak for themselves. Whether you&apos;re prepping for a competition
+                                or starting your first week, you&apos;ll find your people here.
+                            </p>
+                        </div>
+
+                        {/* Stats row */}
+                        <div className="flex gap-8 sm:gap-12 pt-8 border-t border-white/10">
+                            {stats.map((stat, i) => (
                                 <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, y: 20 }}
+                                    key={i}
+                                    initial={{ opacity: 0, y: 12 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
-                                    transition={{ delay: index * 0.2, duration: 0.6 }}
-                                    className="p-4 border border-white/5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                                    transition={{ delay: 0.15 + i * 0.1, duration: 0.5 }}
                                 >
-                                    <div className="mb-3">{feature.icon}</div>
-                                    <h3 className="font-bold text-white mb-1">{feature.title}</h3>
-                                    <p className="text-xs text-muted-foreground">{feature.description}</p>
+                                    <span className="block text-2xl sm:text-3xl font-heading font-bold text-white">
+                                        {stat.value}
+                                    </span>
+                                    <span className="text-xs text-zinc-500 uppercase tracking-wider">
+                                        {stat.label}
+                                    </span>
                                 </motion.div>
                             ))}
                         </div>
                     </motion.div>
 
-                    {/* Animated Image Carousel */}
-                    <div className="relative h-[600px] w-full rounded-2xl overflow-hidden shadow-2xl shadow-primary/20 bg-zinc-900 group">
-                        <AnimatePresence mode="popLayout">
-                            <motion.div
-                                key={currentImageIndex}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 1 }}
-                                className="absolute inset-0 bg-cover bg-center"
-                                style={{ backgroundImage: `url('${images[currentImageIndex]}')` }}
-                                role="img"
-                                aria-label="MFP Gym Periyanaickenpalayam - gym equipment and training area"
-                            />
-                        </AnimatePresence>
+                    {/* Image column — spans 5 */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.97 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, delay: 0.1 }}
+                        className="lg:col-span-5"
+                    >
+                        <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden bg-zinc-900">
+                            <AnimatePresence mode="popLayout">
+                                <motion.div
+                                    key={currentImageIndex}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.8 }}
+                                    className="absolute inset-0 bg-cover bg-center"
+                                    style={{ backgroundImage: `url('${images[currentImageIndex]}')` }}
+                                    role="img"
+                                    aria-label="MFP Gym training area"
+                                />
+                            </AnimatePresence>
 
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80 z-10" />
-                        <div className="absolute bottom-6 left-6 right-6 z-20">
-                            <p className="text-white font-heading text-3xl">TEAM MFP — BUILT FOR <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">GREATNESS</span></p>
+                            {/* Subtle bottom gradient */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                         </div>
-                    </div>
+
+                        {/* Image dots */}
+                        <div className="flex justify-center gap-1.5 mt-4">
+                            {images.map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setCurrentImageIndex(i)}
+                                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                                        i === currentImageIndex
+                                            ? "bg-primary w-6"
+                                            : "bg-zinc-700 hover:bg-zinc-500"
+                                    }`}
+                                    aria-label={`View image ${i + 1}`}
+                                />
+                            ))}
+                        </div>
+                    </motion.div>
                 </div>
+
+                {/* Bottom: What you get — horizontal strip */}
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="mt-16 md:mt-24 grid grid-cols-1 sm:grid-cols-3 gap-px bg-white/[0.06] rounded-xl overflow-hidden"
+                >
+                    {[
+                        {
+                            title: "Premium Equipment",
+                            desc: "Plate-loaded machines, free weights, and functional rigs — no cheap stuff.",
+                        },
+                        {
+                            title: "Certified Trainers",
+                            desc: "Each trainer has real competition and coaching experience.",
+                        },
+                        {
+                            title: "Personalized Plans",
+                            desc: "Diet and workout plans built around your body, schedule, and goals.",
+                        },
+                    ].map((item, i) => (
+                        <div
+                            key={i}
+                            className="bg-black p-6 md:p-8 group hover:bg-white/[0.02] transition-colors duration-300"
+                        >
+                            <span className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3 block">
+                                0{i + 1}
+                            </span>
+                            <h3 className="text-base md:text-lg font-bold text-white mb-2">
+                                {item.title}
+                            </h3>
+                            <p className="text-sm text-zinc-500 leading-relaxed">
+                                {item.desc}
+                            </p>
+                        </div>
+                    ))}
+                </motion.div>
             </div>
         </section>
     );
