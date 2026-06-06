@@ -7,14 +7,11 @@ import {
     Users,
     CalendarCheck,
     CreditCard,
-    Utensils,
-    Bell,
     Dumbbell,
     Settings,
     LogOut,
     Menu,
     X,
-    UserPlus,
     ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,11 +22,9 @@ const sidebarLinks = [
     { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Members", href: "/admin/members", icon: Users },
     { name: "Payments", href: "/admin/payments", icon: CreditCard },
-    { name: "Diet AI", href: "/admin/diet-ai", icon: Utensils },
-    { name: "Notifications", href: "/admin/notifications", icon: Bell },
     { name: "Trainers", href: "/admin/trainers", icon: Dumbbell },
-    { name: "Members Log", href: "/admin/members-log", icon: UserPlus }, // Changed icon and name to label
-    { name: "Today's Log", href: "/admin/attendance", icon: ClipboardList }, // Added new item
+    { name: "Today's Log", href: "/admin/attendance", icon: ClipboardList },
+    { name: "Attendance", href: "/admin/attendance-history", icon: CalendarCheck },
     { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
