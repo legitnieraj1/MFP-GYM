@@ -1,3 +1,19 @@
+// Normalizes a raw phone number into a wa.me-ready international number.
+// All members are Indian — a bare 10-digit number gets the 91 country code
+// prefixed so WhatsApp doesn't misparse it as a different country (e.g. a
+// number starting with 96/97 getting read as +96.../+97... instead of 91xxxx).
+function normalizePhone(rawPhone: string): string {
+    let phone = rawPhone.trim().replace(/[^\d]/g, '');
+
+    if (phone.length === 10) {
+        phone = `91${phone}`;
+    } else if (phone.length === 11 && phone.startsWith('0')) {
+        phone = `91${phone.slice(1)}`;
+    }
+
+    return phone;
+}
+
 export function buildReminderInfo(member: any): {
     hasPhone: boolean;
     phone: string;
@@ -10,8 +26,7 @@ export function buildReminderInfo(member: any): {
         return { hasPhone: false, phone: "", isExpired: false, message: "", url: "" };
     }
 
-    // Remove all '+' or spaces
-    const phone = member.phone.trim().replace(/\+/g, '').replace(/\s+/g, '');
+    const phone = normalizePhone(member.phone);
 
     // Check if membership is expired or expiring
     const isExpired = member.membership?.status === 'EXPIRED' ||
@@ -43,7 +58,7 @@ export function openWhatsAppReminder(member: any) {
 export function openWhatsAppBirthdayWish(member: { name: string; phone: string }) {
     if (!member || !member.phone) return;
 
-    let phone = member.phone.trim().replace(/\+/g, '').replace(/\s+/g, '');
+    const phone = normalizePhone(member.phone);
 
     // Emojis as Unicode escapes to prevent any encoding corruption
     const party    = '\uD83C\uDF89'; // 🎉
