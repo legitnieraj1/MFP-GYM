@@ -18,6 +18,45 @@ async function checkAdminRole(userId: string) {
     return data.role === "ADMIN";
 }
 
+// Shared row-mapping for member records fetched from the `members` table.
+function mapMemberRow(member: any) {
+    const isActive = member.membership_end ? new Date(member.membership_end) > new Date() : false;
+
+    // Calculate plan based on duration if needed, or default
+    let plan = member.membership_plan || "BASIC";
+    if (!member.membership_plan && member.membership_start && member.membership_end) {
+        const start = new Date(member.membership_start);
+        const end = new Date(member.membership_end);
+        const days = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+        if (days > 300) plan = "ELITE";
+        else if (days > 150) plan = "PRO";
+        else if (days > 100) plan = "TRANSFORM_120";
+        else if (days > 50) plan = "TRANSFORM_60";
+        else if (days > 25) plan = "BASIC";
+        else plan = "BASIC_1M";
+    }
+
+    return {
+        id: member.id,
+        name: member.name,
+        email: "", // Not available in members table
+        phone: member.mobile,
+        photo: member.photo_url || null, // Getting photo from table
+        enroll_no: member.enroll_no || null,
+        age: member.age || null,
+        dob: member.dob || null,
+        weight: member.weight || null,
+        height: member.height || null,
+        last_reminded_at: member.last_reminded_at || null,
+        membership: member.membership_end ? {
+            plan: plan,
+            status: isActive ? "ACTIVE" : "EXPIRED",
+            start_date: member.membership_start,
+            end_date: member.membership_end
+        } : null
+    };
+}
+
 export async function getMembers() {
     if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
 
@@ -29,47 +68,55 @@ export async function getMembers() {
 
         if (error) throw error;
 
-        const members = data.map(member => {
-            const isActive = member.membership_end ? new Date(member.membership_end) > new Date() : false;
-
-            // Calculate plan based on duration if needed, or default
-            let plan = member.membership_plan || "BASIC";
-            if (!member.membership_plan && member.membership_start && member.membership_end) {
-                const start = new Date(member.membership_start);
-                const end = new Date(member.membership_end);
-                const days = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-                if (days > 300) plan = "ELITE";
-                else if (days > 150) plan = "PRO";
-                else if (days > 100) plan = "TRANSFORM_120";
-                else if (days > 50) plan = "TRANSFORM_60";
-                else if (days > 25) plan = "BASIC";
-                else plan = "BASIC_1M";
-            }
-
-            return {
-                id: member.id,
-                name: member.name,
-                email: "", // Not available in members table
-                phone: member.mobile,
-                photo: member.photo_url || null, // Getting photo from table
-                enroll_no: member.enroll_no || null,
-                age: member.age || null,
-                dob: member.dob || null,
-                weight: member.weight || null,
-                height: member.height || null,
-                membership: member.membership_end ? {
-                    plan: plan,
-                    status: isActive ? "ACTIVE" : "EXPIRED",
-                    start_date: member.membership_start,
-                    end_date: member.membership_end
-                } : null
-            };
-        });
+        const members = data.map(mapMemberRow);
 
         return { success: true, data: members };
     } catch (error) {
         console.error("Failed to fetch members:", error);
         return { success: false, error: "Failed to fetch members" };
+    }
+}
+
+// Members whose membership has actually expired (end_date in the past).
+export async function getExpiredMembers() {
+    if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
+
+    try {
+        const { data, error } = await supabaseAdmin
+            .from("members")
+            .select("*")
+            .not("membership_end", "is", null)
+            .lt("membership_end", new Date().toISOString())
+            .order("membership_end", { ascending: false });
+
+        if (error) throw error;
+
+        // Belt-and-suspenders re-check in case of clock skew between app/DB.
+        const members = data.map(mapMemberRow).filter(m => m.membership?.status === "EXPIRED");
+
+        return { success: true, data: members };
+    } catch (error) {
+        console.error("Failed to fetch expired members:", error);
+        return { success: false, error: "Failed to fetch expired members" };
+    }
+}
+
+// Records that a renewal reminder was sent to a member (bulk reminder flow only).
+export async function markMemberReminded(memberId: string) {
+    if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
+
+    try {
+        const { error } = await supabaseAdmin
+            .from("members")
+            .update({ last_reminded_at: new Date().toISOString() })
+            .eq("id", memberId);
+
+        if (error) throw error;
+
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to mark member as reminded:", error);
+        return { success: false, error: "Failed to mark member as reminded" };
     }
 }
 

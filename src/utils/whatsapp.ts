@@ -1,9 +1,17 @@
-export function openWhatsAppReminder(member: any) {
-    if (!member || !member.phone) return;
+export function buildReminderInfo(member: any): {
+    hasPhone: boolean;
+    phone: string;
+    isExpired: boolean;
+    message: string;
+    url: string;
+} {
+    const hasPhone = !!(member && member.phone);
+    if (!hasPhone) {
+        return { hasPhone: false, phone: "", isExpired: false, message: "", url: "" };
+    }
 
-    let phone = member.phone.trim();
     // Remove all '+' or spaces
-    phone = phone.replace(/\+/g, '').replace(/\s+/g, '');
+    const phone = member.phone.trim().replace(/\+/g, '').replace(/\s+/g, '');
 
     // Check if membership is expired or expiring
     const isExpired = member.membership?.status === 'EXPIRED' ||
@@ -20,9 +28,16 @@ Kindly renew your fee to continue your fitness journey.
 – MFP Gym`;
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+    const url = `https://wa.me/${phone}?text=${encodedMessage}`;
 
-    window.open(whatsappUrl, '_blank');
+    return { hasPhone: true, phone, isExpired, message, url };
+}
+
+export function openWhatsAppReminder(member: any) {
+    const info = buildReminderInfo(member);
+    if (!info.hasPhone) return;
+
+    window.open(info.url, '_blank');
 }
 
 export function openWhatsAppBirthdayWish(member: { name: string; phone: string }) {

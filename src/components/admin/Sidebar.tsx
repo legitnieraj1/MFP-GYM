@@ -12,7 +12,8 @@ import {
     LogOut,
     Menu,
     X,
-    ClipboardList
+    ClipboardList,
+    AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -21,6 +22,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const sidebarLinks = [
     { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Members", href: "/admin/members", icon: Users },
+    { name: "Expired Members", href: "/admin/expired-members", icon: AlertTriangle },
     { name: "Payments", href: "/admin/payments", icon: CreditCard },
     { name: "Trainers", href: "/admin/trainers", icon: Dumbbell },
     { name: "Today's Log", href: "/admin/attendance", icon: ClipboardList },
