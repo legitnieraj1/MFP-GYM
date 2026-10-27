@@ -189,7 +189,10 @@ export async function getTodaysLog() {
         .select(`
             *,
             member:members (
-                name
+                id,
+                name,
+                enroll_no,
+                photo_url
             )
         `)
         .eq('date', today)

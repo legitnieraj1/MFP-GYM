@@ -61,7 +61,23 @@ const gymInclusions = [
     "Steam Bath",
 ];
 
-const programs = [
+interface Program {
+    icon: any;
+    name: string;
+    duration: string;
+    price: string;
+    tag: string | null;
+    description: string;
+    features: string[];
+    whatsapp: string;
+    cta: string;
+    paymentOptions?: {
+        title: string;
+        options: { label: string; price: string }[];
+    };
+}
+
+const programs: Program[] = [
     {
         icon: Dumbbell,
         name: "Personal Training",
@@ -98,8 +114,15 @@ const programs = [
         icon: Crown,
         name: "120-Day Transformation",
         duration: "120 Days",
-        price: "₹15,000",
+        price: "₹20,000",
         tag: "Elite",
+        paymentOptions: {
+            title: "If paid monthly",
+            options: [
+                { label: "Per month", price: "₹6,000" },
+                { label: "3 Months", price: "₹12,500" },
+            ],
+        },
         description: "16-week complete lifestyle overhaul with premium coaching.",
         features: [
             "Dedicated personal trainer",
@@ -107,7 +130,7 @@ const programs = [
             "WhatsApp diet follow-ups",
             "Optional professional photoshoot",
         ],
-        whatsapp: "Hi! I want to apply for the 120-Day Elite Transformation (₹15,000).",
+        whatsapp: "Hi! I want to apply for the 120-Day Elite Transformation (₹20,000).",
         cta: "Apply Now",
     },
     {
@@ -375,59 +398,76 @@ export function Membership({ user }: { user?: any }) {
                                     isPopular ? "z-20 md:scale-[1.03]" : "z-10"
                                 }`}
                             >
-                                <div className={`relative h-full rounded-2xl p-6 transition-transform hover:scale-[1.02] ${
+                                <div className={`relative h-full rounded-2xl p-6 transition-transform hover:scale-[1.02] flex flex-col justify-between ${
                                     isPopular
                                         ? "border-2 border-red-500/40 bg-gradient-to-b from-[#E50914] to-[#8b0000] text-white shadow-xl shadow-red-900/20"
                                         : "border border-red-500/[0.12] bg-black/60 backdrop-blur-md text-white shadow-[0_0_0_1px_rgba(229,9,20,.05)_inset]"
                                 }`}>
-                                    {program.tag && (
-                                        <div className="absolute -top-2.5 right-4 z-10">
-                                            <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${
-                                                isPopular
-                                                    ? "bg-white text-[#E50914] shadow-md"
-                                                    : "bg-amber-500/90 text-black"
+                                    <div>
+                                        {program.tag && (
+                                            <div className="absolute -top-2.5 right-4 z-10">
+                                                <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${
+                                                    isPopular
+                                                        ? "bg-white text-[#E50914] shadow-md"
+                                                        : "bg-amber-500/90 text-black"
+                                                }`}>
+                                                    {program.tag}
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        {/* Icon + Name */}
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                                                isPopular ? "bg-white/20" : "bg-primary/10"
                                             }`}>
-                                                {program.tag}
-                                            </span>
+                                                <Icon className={`w-4 h-4 ${isPopular ? "text-white" : "text-primary"}`} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-base font-bold leading-tight">{program.name}</h3>
+                                                <span className={`text-[11px] ${isPopular ? "text-white/60" : "text-zinc-500"}`}>{program.duration}</span>
+                                            </div>
                                         </div>
-                                    )}
 
-                                    {/* Icon + Name */}
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                                            isPopular ? "bg-white/20" : "bg-primary/10"
-                                        }`}>
-                                            <Icon className={`w-4 h-4 ${isPopular ? "text-white" : "text-primary"}`} />
+                                        {/* Price & Installments */}
+                                        <div className="mb-3">
+                                            <div className="text-2xl font-extrabold tabular-nums">
+                                                {program.price}
+                                            </div>
+                                            {program.paymentOptions && (
+                                                <div className="mt-2 p-2.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-[11px] space-y-1">
+                                                    <div className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">
+                                                        {program.paymentOptions.title}
+                                                    </div>
+                                                    {program.paymentOptions.options.map((opt, i) => (
+                                                        <div key={i} className="flex items-center justify-between text-zinc-300">
+                                                            <span className="text-zinc-400">{opt.label}:</span>
+                                                            <span className="font-semibold text-white">{opt.price}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
-                                        <div>
-                                            <h3 className="text-base font-bold leading-tight">{program.name}</h3>
-                                            <span className={`text-[11px] ${isPopular ? "text-white/60" : "text-zinc-500"}`}>{program.duration}</span>
-                                        </div>
+
+                                        <p className={`text-sm mb-4 leading-relaxed ${isPopular ? "text-white/70" : "text-zinc-500"}`}>
+                                            {program.description}
+                                        </p>
+
+                                        {/* Features */}
+                                        <ul className="space-y-2 mb-5">
+                                            {program.features.map((feature, i) => (
+                                                <li key={i} className={`flex items-start gap-2 text-sm ${isPopular ? "text-white/80" : "text-zinc-400"}`}>
+                                                    <Check className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${isPopular ? "text-white" : "text-emerald-500"}`} />
+                                                    {feature}
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </div>
-
-                                    {/* Price */}
-                                    <div className="text-2xl font-extrabold mb-3 tabular-nums">
-                                        {program.price}
-                                    </div>
-
-                                    <p className={`text-sm mb-4 leading-relaxed ${isPopular ? "text-white/70" : "text-zinc-500"}`}>
-                                        {program.description}
-                                    </p>
-
-                                    {/* Features */}
-                                    <ul className="space-y-2 mb-5">
-                                        {program.features.map((feature, i) => (
-                                            <li key={i} className={`flex items-start gap-2 text-sm ${isPopular ? "text-white/80" : "text-zinc-400"}`}>
-                                                <Check className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${isPopular ? "text-white" : "text-emerald-500"}`} />
-                                                {feature}
-                                            </li>
-                                        ))}
-                                    </ul>
 
                                     {/* CTA */}
                                     <button
                                         onClick={() => handleWhatsApp(program.whatsapp)}
-                                        className={`w-full rounded-lg py-2.5 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${
+                                        className={`w-full rounded-lg py-2.5 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors mt-auto ${
                                             isPopular
                                                 ? "bg-neutral-900 hover:bg-neutral-800 text-white"
                                                 : "bg-[#E50914] hover:bg-[#c4070f] text-white"

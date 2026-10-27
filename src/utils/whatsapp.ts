@@ -2,7 +2,7 @@
 // All members are Indian — a bare 10-digit number gets the 91 country code
 // prefixed so WhatsApp doesn't misparse it as a different country (e.g. a
 // number starting with 96/97 getting read as +96.../+97... instead of 91xxxx).
-function normalizePhone(rawPhone: string): string {
+export function normalizePhone(rawPhone: string): string {
     let phone = rawPhone.trim().replace(/[^\d]/g, '');
 
     if (phone.length === 10) {
