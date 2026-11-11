@@ -83,6 +83,8 @@ export default function AdminDashboard() {
             const checkins = attendance.map((a: any) => ({
                 type: 'checkin',
                 name: a.member?.name || "Unknown Member",
+                enroll_no: a.member?.enroll_no || null,
+                photo_url: a.member?.photo_url || null,
                 action: "checked in",
                 time: new Date(a.check_in_time),
                 amount: 0
@@ -92,6 +94,8 @@ export default function AdminDashboard() {
             const recentPayments = payments.map((p: any) => ({
                 type: 'payment',
                 name: p.member?.name || "Unknown Member",
+                enroll_no: p.member?.enroll_no || null,
+                photo_url: p.member?.photo_url || null,
                 action: "renewed membership",
                 time: new Date(p.created_at),
                 amount: p.amount
@@ -199,32 +203,57 @@ export default function AdminDashboard() {
                         <CardTitle className="text-white">Live Activity Feed</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-8">
+                        <div className="space-y-4">
                             {loading ? (
                                 <p className="text-zinc-500 text-sm">Loading activity...</p>
                             ) : activityFeed.length === 0 ? (
                                 <p className="text-zinc-500 text-sm">No recent activity.</p>
                             ) : (
                                 activityFeed.map((item, i) => (
-                                    <div key={i} className="flex items-center">
-                                        <div className={`h-9 w-9 rounded-full flex items-center justify-center border border-white/10 ${item.type === 'checkin' ? 'bg-green-500/10 text-green-500' :
-                                            item.type === 'payment' ? 'bg-blue-500/10 text-blue-500' :
-                                                item.type === 'alert' ? 'bg-red-500/10 text-red-500' :
-                                                    'bg-zinc-800 text-white'
-                                            }`}>
-                                            {item.type === 'checkin' ? <UserCheck size={16} /> :
-                                                item.type === 'alert' ? <AlertTriangle size={16} /> :
-                                                    <Clock size={16} />}
+                                    <div key={i} className="flex items-center gap-3 min-w-0">
+                                        {/* Avatar */}
+                                        <div className="h-9 w-9 rounded-full flex-shrink-0 overflow-hidden border border-white/10 bg-zinc-800">
+                                            {item.photo_url ? (
+                                                <img 
+                                                    src={item.photo_url} 
+                                                    alt={item.name} 
+                                                    className="h-full w-full object-cover"
+                                                    onError={(e) => { 
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.style.display = 'none';
+                                                        if (target.parentElement) {
+                                                            target.parentElement.innerHTML = `<div class="h-full w-full flex items-center justify-center text-xs font-bold text-white" style="background:${item.type === 'checkin' ? '#16a34a33' : '#3b82f633'}">${item.name.charAt(0).toUpperCase()}</div>`;
+                                                        }
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className={`h-full w-full flex items-center justify-center text-xs font-bold text-white ${
+                                                    item.type === 'checkin' ? 'bg-green-500/20 text-green-400' :
+                                                    item.type === 'payment' ? 'bg-blue-500/20 text-blue-400' :
+                                                    'bg-zinc-700'
+                                                }`}>
+                                                    {item.name.charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className="ml-4 space-y-1">
-                                            <p className="text-sm font-medium leading-none text-white">
-                                                {item.name} <span className="text-zinc-500 font-normal">{item.action}</span>
+                                        {/* Info */}
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-medium leading-none text-white truncate">
+                                                {item.name}
+                                                {item.enroll_no && (
+                                                    <span className="ml-1.5 text-[10px] font-normal text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded-full border border-zinc-700">#{item.enroll_no}</span>
+                                                )}
                                             </p>
-                                            <p className="text-xs text-muted-foreground">{item.timeStr}</p>
+                                            <p className="text-xs text-zinc-500 mt-0.5">
+                                                <span className="text-zinc-400">{item.action}</span> · {item.timeStr}
+                                            </p>
                                         </div>
-                                        <div className="ml-auto font-medium text-xs text-zinc-500">
-                                            {item.amount ? `+ Rs. ${item.amount.toLocaleString()}` : ""}
-                                        </div>
+                                        {/* Amount */}
+                                        {item.amount ? (
+                                            <div className="flex-shrink-0 text-xs font-medium text-blue-400">
+                                                + Rs. {item.amount.toLocaleString()}
+                                            </div>
+                                        ) : null}
                                     </div>
                                 ))
                             )}
@@ -248,12 +277,34 @@ export default function AdminDashboard() {
                                     const daysLeft = Math.ceil((new Date(member.membership.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                                     return (
                                         <div key={i} className="flex items-center justify-between p-3 bg-black/40 rounded-lg border border-white/5">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs text-zinc-400">
-                                                    {member.name.charAt(0)}
+                                            <div className="flex items-center gap-3 min-w-0 mr-2">
+                                                {/* Avatar */}
+                                                <div className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden border border-white/10 bg-zinc-800">
+                                                    {member.photo ? (
+                                                        <img 
+                                                            src={member.photo} 
+                                                            alt={member.name} 
+                                                            className="h-full w-full object-cover"
+                                                            onError={(e) => {
+                                                                const t = e.target as HTMLImageElement;
+                                                                t.style.display = 'none';
+                                                                if (t.parentElement) {
+                                                                    t.parentElement.innerHTML = `<div class="h-full w-full flex items-center justify-center text-xs font-bold text-zinc-400">${member.name.charAt(0).toUpperCase()}</div>`;
+                                                                }
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <div className="h-full w-full flex items-center justify-center text-xs font-bold text-zinc-400">
+                                                            {member.name.charAt(0).toUpperCase()}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <div>
-                                                    <div className="text-sm font-medium text-white">{member.name}</div>
+                                                {/* Info */}
+                                                <div className="min-w-0">
+                                                    <div className="text-sm font-medium text-white truncate">{member.name}</div>
+                                                    {member.enroll_no && (
+                                                        <div className="text-[10px] text-zinc-500">#{member.enroll_no}</div>
+                                                    )}
                                                     <div className="text-xs text-red-400">Expires in {daysLeft} days</div>
                                                 </div>
                                             </div>
@@ -261,7 +312,7 @@ export default function AdminDashboard() {
                                                 onClick={() => openWhatsAppReminder(member)}
                                                 disabled={!member.phone}
                                                 title={!member.phone ? "Phone number not available" : "Send Reminder via WhatsApp"}
-                                                className="text-xs bg-green-600/20 hover:bg-green-600/40 text-green-500 hover:text-green-400 px-3 py-1.5 rounded transition-colors border border-green-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="text-xs bg-green-600/20 hover:bg-green-600/40 text-green-500 hover:text-green-400 px-3 py-1.5 rounded transition-colors border border-green-600/20 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                                             >
                                                 Remind
                                             </button>

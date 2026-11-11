@@ -13,7 +13,8 @@ import {
     Menu,
     X,
     ClipboardList,
-    AlertTriangle
+    AlertTriangle,
+    Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -27,6 +28,7 @@ const sidebarLinks = [
     { name: "Trainers", href: "/admin/trainers", icon: Dumbbell },
     { name: "Today's Log", href: "/admin/attendance", icon: ClipboardList },
     { name: "Attendance", href: "/admin/attendance-history", icon: CalendarCheck },
+    { name: "PT Measurements", href: "/admin/pt-measurements", icon: Activity },
     { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

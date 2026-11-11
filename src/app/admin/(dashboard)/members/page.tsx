@@ -62,6 +62,26 @@ type Member = {
     } | null;
 };
 
+function calculateAgeFromDOB(dobDisplay: string): number | null {
+    if (!dobDisplay || dobDisplay.length < 10) return null;
+    const parts = dobDisplay.split('/');
+    if (parts.length !== 3) return null;
+    const [day, month, year] = parts.map(Number);
+    if (!day || !month || !year || year < 1900 || year > new Date().getFullYear()) return null;
+    const dob = new Date(year, month - 1, day);
+    if (isNaN(dob.getTime())) return null;
+    // reject future dates
+    const today = new Date();
+    if (dob >= today) return null;
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+        age--;
+    }
+    if (age < 0 || age > 120) return null;
+    return age;
+}
+
 export default function MembersPage() {
     const [members, setMembers] = useState<Member[]>([]);
     const [loading, setLoading] = useState(true);
@@ -79,6 +99,12 @@ export default function MembersPage() {
     const [actionLoading, setActionLoading] = useState(false);
     const [renewPlan, setRenewPlan] = useState("BASIC");
     const [photoViewerUrl, setPhotoViewerUrl] = useState<string | null>(null);
+
+    // Age auto-calculation state
+    const [addDobInput, setAddDobInput] = useState("");
+    const [addAutoAge, setAddAutoAge] = useState<number | "">("");
+    const [editDobInput, setEditDobInput] = useState("");
+    const [editAutoAge, setEditAutoAge] = useState<number | "">("");
 
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
@@ -342,7 +368,7 @@ export default function MembersPage() {
                     <h1 className="text-3xl font-bold tracking-tight text-white">Members</h1>
                     <p className="text-muted-foreground">Manage your gym members and subscriptions.</p>
                 </div>
-                <Dialog open={isAddOpen} onOpenChange={(val) => { setIsAddOpen(val); if (!val) { setCapturedPhotoUrl(null); setCapturedPhotoFile(null); stopCamera(); } }}>
+                <Dialog open={isAddOpen} onOpenChange={(val) => { setIsAddOpen(val); if (!val) { setCapturedPhotoUrl(null); setCapturedPhotoFile(null); stopCamera(); setAddDobInput(""); setAddAutoAge(""); } }}>
                     <DialogTrigger asChild>
                         <Button className="bg-[#E50914] hover:bg-[#E50914]/90 text-white shadow-[0_0_15px_-5px_#E50914]">
                             <Plus className="mr-2 h-4 w-4" /> Add New Member
@@ -414,12 +440,37 @@ export default function MembersPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Age (Optional)</Label>
-                                    <Input name="age" type="number" placeholder="Enter age" className="bg-zinc-900 border-zinc-800" />
+                                    <Label>Age (Auto-calculated)</Label>
+                                    <div className="relative">
+                                        <Input 
+                                            name="age" 
+                                            type="number" 
+                                            placeholder="Auto from DOB" 
+                                            value={addAutoAge} 
+                                            readOnly 
+                                            className="bg-zinc-900 border-zinc-800 text-zinc-300 cursor-not-allowed pr-8" 
+                                        />
+                                        {addAutoAge !== "" && (
+                                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-zinc-500 bg-zinc-800 px-1 rounded">auto</span>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Date of Birth (DD/MM/YYYY)</Label>
-                                    <Input name="dob_display" type="text" pattern="\d{2}/\d{2}/\d{4}" placeholder="DD/MM/YYYY" className="bg-zinc-900 border-zinc-800" />
+                                    <Input 
+                                        name="dob_display" 
+                                        type="text" 
+                                        pattern="\d{2}/\d{2}/\d{4}" 
+                                        placeholder="DD/MM/YYYY" 
+                                        className="bg-zinc-900 border-zinc-800" 
+                                        value={addDobInput}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setAddDobInput(val);
+                                            const age = calculateAgeFromDOB(val);
+                                            setAddAutoAge(age !== null ? age : "");
+                                        }}
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Weight (kg)</Label>
@@ -579,7 +630,22 @@ export default function MembersPage() {
                                         <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800 text-white">
                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                             <DropdownMenuItem onClick={() => handleViewProfile(member)}>View Profile</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => { setSelectedMember(member); setIsEditOpen(true); }}>Edit Member</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => { 
+                                                setSelectedMember(member); 
+                                                // Pre-populate DOB and age for edit form
+                                                if (member.dob) {
+                                                    // dob is stored as YYYY-MM-DD, convert to DD/MM/YYYY for display
+                                                    const [y, m, d] = member.dob.split('-');
+                                                    const displayDob = `${d}/${m}/${y}`;
+                                                    setEditDobInput(displayDob);
+                                                    const age = calculateAgeFromDOB(displayDob);
+                                                    setEditAutoAge(age !== null ? age : "");
+                                                } else {
+                                                    setEditDobInput("");
+                                                    setEditAutoAge("");
+                                                }
+                                                setIsEditOpen(true); 
+                                            }}>Edit Member</DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => { setSelectedMember(member); setIsEditDatesOpen(true); }}>Edit Membership Dates</DropdownMenuItem>
                                             <DropdownMenuSeparator className="bg-zinc-800" />
                                             <DropdownMenuItem onClick={() => { setSelectedMember(member); setIsRenewOpen(true); }}>Renew Membership</DropdownMenuItem>
@@ -710,7 +776,7 @@ export default function MembersPage() {
             </Dialog>
 
             {/* Edit Dialog */}
-            <Dialog open={isEditOpen} onOpenChange={(val) => { setIsEditOpen(val); if (!val) { setCapturedPhotoUrl(null); setCapturedPhotoFile(null); stopCamera(); } }}>
+            <Dialog open={isEditOpen} onOpenChange={(val) => { setIsEditOpen(val); if (!val) { setCapturedPhotoUrl(null); setCapturedPhotoFile(null); stopCamera(); setEditDobInput(""); setEditAutoAge(""); } }}>
                 <DialogContent className="bg-[#0A0A0A] border-zinc-800 text-white max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Edit Member</DialogTitle>
@@ -772,12 +838,37 @@ export default function MembersPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Age (Optional)</Label>
-                                <Input name="age" type="number" defaultValue={selectedMember?.age || ""} placeholder="Enter age" className="bg-zinc-900 border-zinc-800" />
+                                <Label>Age (Auto-calculated)</Label>
+                                <div className="relative">
+                                    <Input 
+                                        name="age" 
+                                        type="number" 
+                                        placeholder="Auto from DOB" 
+                                        value={editAutoAge} 
+                                        readOnly 
+                                        className="bg-zinc-900 border-zinc-800 text-zinc-300 cursor-not-allowed pr-8" 
+                                    />
+                                    {editAutoAge !== "" && (
+                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-zinc-500 bg-zinc-800 px-1 rounded">auto</span>
+                                    )}
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>Date of Birth (DD/MM/YYYY)</Label>
-                                <Input name="dob_display" type="text" pattern="\d{2}/\d{2}/\d{4}" placeholder="DD/MM/YYYY" defaultValue={selectedMember?.dob ? new Date(selectedMember.dob).toLocaleDateString("en-GB") : ""} className="bg-zinc-900 border-zinc-800" />
+                                <Input 
+                                    name="dob_display" 
+                                    type="text" 
+                                    pattern="\d{2}/\d{2}/\d{4}" 
+                                    placeholder="DD/MM/YYYY" 
+                                    className="bg-zinc-900 border-zinc-800"
+                                    value={editDobInput}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setEditDobInput(val);
+                                        const age = calculateAgeFromDOB(val);
+                                        setEditAutoAge(age !== null ? age : "");
+                                    }}
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label>Weight (kg)</Label>

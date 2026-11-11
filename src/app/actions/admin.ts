@@ -476,7 +476,7 @@ export async function getAttendance() {
             .from("attendance")
             .select(`
                 *,
-                member:members(name, mobile)
+                member:members(name, mobile, enroll_no, photo_url)
             `)
             .order("check_in_time", { ascending: false })
             .limit(100);
@@ -497,7 +497,7 @@ export async function getPayments() {
             .from("member_payments")
             .select(`
                 *,
-                member:members(name, mobile)
+                member:members(name, mobile, enroll_no, photo_url)
             `)
             .order("created_at", { ascending: false })
             .limit(100);
