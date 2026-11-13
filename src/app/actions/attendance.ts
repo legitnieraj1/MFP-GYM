@@ -176,13 +176,13 @@ export async function autoCheckoutOldSessions() {
     }
 }
 
-export async function getTodaysLog() {
+export async function getTodaysLog(selectedDate?: string) {
     if (!supabaseAdmin) return [];
 
     // Trigger auto-checkout maintenance
     await autoCheckoutOldSessions();
 
-    const today = istDate();
+    const dateToFetch = selectedDate || istDate();
 
     const { data: logs, error } = await supabaseAdmin
         .from('attendance')
@@ -195,7 +195,7 @@ export async function getTodaysLog() {
                 photo_url
             )
         `)
-        .eq('date', today)
+        .eq('date', dateToFetch)
         .order('check_in_time', { ascending: false });
 
     if (error) {
