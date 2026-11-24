@@ -40,6 +40,7 @@ export type PTMeasurement = {
     measured_at: string;
     created_at: string;
     updated_at: string;
+    is_absent: boolean;
 };
 
 export type PTMeasurementResult = {
@@ -270,6 +271,7 @@ export async function getPTMeasurements(
 
 /**
  * Add a new measurement row with day limit enforcement (Day 1..90 or Day 1..120).
+ * Pass isAbsent=true to mark a day absent without requiring weight/BMI/body fat data.
  */
 export async function addPTMeasurement(
     memberId: string,
@@ -278,7 +280,8 @@ export async function addPTMeasurement(
     bmi: number | null,
     bodyFatPct: number | null,
     measuredAt: string,
-    challengeType?: ChallengeType
+    challengeType?: ChallengeType,
+    isAbsent: boolean = false
 ): Promise<{ success: boolean; data?: PTMeasurement; error?: string }> {
     if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
 
@@ -297,10 +300,12 @@ export async function addPTMeasurement(
                 member_id: memberId,
                 challenge_type: challengeType || null,
                 day_number: dayNumber,
-                weight_kg: weightKg,
-                bmi,
-                body_fat_pct: bodyFatPct,
+                // For absent days, store nulls for measurement values
+                weight_kg: isAbsent ? null : weightKg,
+                bmi: isAbsent ? null : bmi,
+                body_fat_pct: isAbsent ? null : bodyFatPct,
                 measured_at: measuredAt,
+                is_absent: isAbsent,
             })
             .select()
             .single();
@@ -325,6 +330,8 @@ export async function addPTMeasurement(
 
 /**
  * Update an existing measurement entry.
+ * Pass isAbsent=true to mark absent (clears measurement values).
+ * Pass isAbsent=false to convert an absent record back to a measurement record.
  */
 export async function updatePTMeasurement(
     id: string,
@@ -333,7 +340,8 @@ export async function updatePTMeasurement(
     bmi: number | null,
     bodyFatPct: number | null,
     measuredAt: string,
-    challengeType?: ChallengeType
+    challengeType?: ChallengeType,
+    isAbsent: boolean = false
 ): Promise<{ success: boolean; error?: string }> {
     if (!supabaseAdmin) return { success: false, error: "Server configuration error" };
 
@@ -348,10 +356,12 @@ export async function updatePTMeasurement(
     try {
         const updatePayload: any = {
             day_number: dayNumber,
-            weight_kg: weightKg,
-            bmi,
-            body_fat_pct: bodyFatPct,
+            // Clear measurement values when marking absent
+            weight_kg: isAbsent ? null : weightKg,
+            bmi: isAbsent ? null : bmi,
+            body_fat_pct: isAbsent ? null : bodyFatPct,
             measured_at: measuredAt,
+            is_absent: isAbsent,
         };
 
         if (challengeType) {

@@ -22,17 +22,25 @@ async function checkAdminRole(userId: string) {
 function mapMemberRow(member: any) {
     const isActive = member.membership_end ? new Date(member.membership_end) > new Date() : false;
 
-    // Calculate plan based on duration if needed, or default
+    // Always calculate plan from duration to ensure correct badge display.
+    // Stored membership_plan field may be stale (e.g., BASIC for a 12-month member).
     let plan = member.membership_plan || "BASIC";
-    if (!member.membership_plan && member.membership_start && member.membership_end) {
+    if (member.membership_start && member.membership_end) {
         const start = new Date(member.membership_start);
         const end = new Date(member.membership_end);
-        const days = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-        if (days > 300) plan = "ELITE";
-        else if (days > 150) plan = "PRO";
-        else if (days > 100) plan = "TRANSFORM_120";
-        else if (days > 50) plan = "TRANSFORM_60";
-        else if (days > 25) plan = "BASIC";
+        const days = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+        // Thresholds derived from actual DB distribution:
+        // BASIC_1M  ~ 30 days  (< 45)
+        // TRANSFORM_60 ~ 60 days (45–115)
+        // TRANSFORM_120 ~ 120 days (115–155)
+        // BASIC     ~ 180 days / 6 months (155–300)
+        // PRO       ~ 365 days / 12 months (300–600)
+        // ELITE     ~ 730 days / 24 months (> 600)
+        if (days >= 600) plan = "ELITE";
+        else if (days >= 300) plan = "PRO";
+        else if (days >= 155) plan = "BASIC";
+        else if (days >= 115) plan = "TRANSFORM_120";
+        else if (days >= 45) plan = "TRANSFORM_60";
         else plan = "BASIC_1M";
     }
 

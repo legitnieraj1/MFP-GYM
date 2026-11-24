@@ -22,6 +22,7 @@ import {
     CheckCircle2,
     Activity,
     Info,
+    Ban,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -69,6 +70,7 @@ type EditRow = {
     bmi: number | string;
     body_fat_pct: number | string;
     measured_at: string;
+    is_absent: boolean;
 };
 
 function fmt(val: number | null | undefined, unit = ""): string {
@@ -103,6 +105,11 @@ function validateRow(row: EditRow, maxDay: number): string | null {
     }
     if (day > maxDay) {
         return `Day number cannot exceed Day ${maxDay} for this challenge.`;
+    }
+    // Skip measurement validation when marking as absent
+    if (row.is_absent) {
+        if (!row.measured_at) return "Absence date is required.";
+        return null;
     }
     if (row.weight_kg !== "" && row.weight_kg !== null) {
         const w = Number(row.weight_kg);
@@ -326,6 +333,7 @@ export default function PTMeasurementsPage() {
             bmi: "",
             body_fat_pct: "",
             measured_at: todayISO(),
+            is_absent: false,
         });
         setRowError(null);
     };
@@ -339,6 +347,7 @@ export default function PTMeasurementsPage() {
             bmi: m.bmi ?? "",
             body_fat_pct: m.body_fat_pct ?? "",
             measured_at: m.measured_at,
+            is_absent: m.is_absent ?? false,
         });
         setRowError(null);
     };
@@ -363,9 +372,11 @@ export default function PTMeasurementsPage() {
         setRowError(null);
 
         const dayNum = Number(editingRow.day_number);
-        const weight = editingRow.weight_kg !== "" ? Number(editingRow.weight_kg) : null;
-        const bmi = editingRow.bmi !== "" ? Number(editingRow.bmi) : null;
-        const fat = editingRow.body_fat_pct !== "" ? Number(editingRow.body_fat_pct) : null;
+        const isAbsent = editingRow.is_absent;
+        // When absent, measurement values are null
+        const weight = (!isAbsent && editingRow.weight_kg !== "") ? Number(editingRow.weight_kg) : null;
+        const bmi = (!isAbsent && editingRow.bmi !== "") ? Number(editingRow.bmi) : null;
+        const fat = (!isAbsent && editingRow.body_fat_pct !== "") ? Number(editingRow.body_fat_pct) : null;
 
         let res: { success: boolean; error?: string };
         if (editingRow.id === null) {
@@ -376,7 +387,8 @@ export default function PTMeasurementsPage() {
                 bmi,
                 fat,
                 editingRow.measured_at,
-                activeChallenge
+                activeChallenge,
+                isAbsent
             );
         } else {
             res = await updatePTMeasurement(
@@ -386,12 +398,17 @@ export default function PTMeasurementsPage() {
                 bmi,
                 fat,
                 editingRow.measured_at,
-                activeChallenge
+                activeChallenge,
+                isAbsent
             );
         }
 
         if (res.success) {
-            showToast(editingRow.id === null ? "Measurement recorded." : "Measurement updated.");
+            showToast(
+                isAbsent
+                    ? (editingRow.id === null ? "Absence recorded." : "Entry updated as absent.")
+                    : (editingRow.id === null ? "Measurement recorded." : "Measurement updated.")
+            );
             setEditingRow(null);
             await loadMeasurements(selectedCandidate.member_id);
             // Refresh candidates to update latest day and date
@@ -430,9 +447,10 @@ export default function PTMeasurementsPage() {
     }, [allMembers, assignSearch]);
 
     // Progress calculations for selected candidate
-    const firstMeas = measurements.length > 0 ? measurements[0] : null;
-    const latestMeas = measurements.length > 0 ? measurements[measurements.length - 1] : null;
-    const hasMultipleMeas = measurements.length > 1;
+    const presentMeasurements = measurements.filter(m => !m.is_absent);
+    const firstMeas = presentMeasurements.length > 0 ? presentMeasurements[0] : null;
+    const latestMeas = presentMeasurements.length > 0 ? presentMeasurements[presentMeasurements.length - 1] : null;
+    const hasMultipleMeas = presentMeasurements.length > 1;
 
     return (
         <div className="space-y-8">
@@ -980,7 +998,9 @@ export default function PTMeasurementsPage() {
                                                         key={m.id}
                                                         className={`hover:bg-zinc-800/40 transition-colors ${
                                                             isFirst && measurements.length > 1 ? "bg-blue-500/[0.03]" : ""
-                                                        } ${isLatest ? "bg-green-500/[0.04]" : ""}`}
+                                                        } ${isLatest ? "bg-green-500/[0.04]" : ""} ${
+                                                            m.is_absent ? "bg-orange-500/[0.04]" : ""
+                                                        }`}
                                                     >
                                                         {/* Reg. No */}
                                                         <td className="px-4 py-3 text-zinc-300 font-mono text-xs">
@@ -1002,12 +1022,17 @@ export default function PTMeasurementsPage() {
                                                                 <span className="font-bold text-white font-mono">
                                                                     Day {m.day_number}
                                                                 </span>
-                                                                {isFirst && measurements.length > 1 && (
+                                                                {m.is_absent && (
+                                                                    <span className="text-[10px] text-orange-400 bg-orange-500/10 border border-orange-500/20 px-1.5 py-0.2 rounded-full">
+                                                                        Absent
+                                                                    </span>
+                                                                )}
+                                                                {!m.is_absent && isFirst && measurements.length > 1 && (
                                                                     <span className="text-[10px] text-blue-400 bg-blue-500/10 border border-blue-500/20 px-1.5 py-0.2 rounded-full">
                                                                         Initial
                                                                     </span>
                                                                 )}
-                                                                {isLatest && (
+                                                                {!m.is_absent && isLatest && (
                                                                     <span className="text-[10px] text-green-400 bg-green-500/10 border border-green-500/20 px-1.5 py-0.2 rounded-full">
                                                                         Latest
                                                                     </span>
@@ -1017,17 +1042,17 @@ export default function PTMeasurementsPage() {
 
                                                         {/* Weight */}
                                                         <td className="px-4 py-3 text-zinc-200 font-mono">
-                                                            {fmt(m.weight_kg, " kg")}
+                                                            {m.is_absent ? <span className="text-zinc-600 text-xs">—</span> : fmt(m.weight_kg, " kg")}
                                                         </td>
 
                                                         {/* BMI */}
                                                         <td className="px-4 py-3 text-zinc-200 font-mono">
-                                                            {fmt(m.bmi)}
+                                                            {m.is_absent ? <span className="text-zinc-600 text-xs">—</span> : fmt(m.bmi)}
                                                         </td>
 
                                                         {/* Body Fat */}
                                                         <td className="px-4 py-3 text-zinc-200 font-mono">
-                                                            {fmt(m.body_fat_pct, "%")}
+                                                            {m.is_absent ? <span className="text-zinc-600 text-xs">—</span> : fmt(m.body_fat_pct, "%")}
                                                         </td>
 
                                                         {/* Date */}
@@ -1312,6 +1337,7 @@ function EditableRow({
 }) {
     const cellCls = "px-4 py-2";
     const inputCls = "bg-zinc-800 border-zinc-700 text-white h-8 text-xs w-full focus:border-[#E50914]";
+    const disabledInputCls = "bg-zinc-900 border-zinc-800 text-zinc-600 h-8 text-xs w-full cursor-not-allowed";
 
     return (
         <tr className={`border-b border-zinc-700 ${isNew ? "bg-[#E50914]/10" : "bg-blue-500/10"}`}>
@@ -1329,18 +1355,34 @@ function EditableRow({
 
             {/* Program Day Input (Allowed: 1 to maxDay) */}
             <td className={cellCls}>
-                <div className="flex items-center gap-1">
-                    <span className="text-xs text-zinc-400">Day</span>
-                    <Input
-                        type="number"
-                        min={1}
-                        max={maxDay}
-                        step={1}
-                        value={row.day_number}
-                        onChange={(e) => onChange({ ...row, day_number: e.target.value })}
-                        className={`${inputCls} w-20 font-mono`}
-                        placeholder={`1-${maxDay}`}
-                    />
+                <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1">
+                        <span className="text-xs text-zinc-400">Day</span>
+                        <Input
+                            type="number"
+                            min={1}
+                            max={maxDay}
+                            step={1}
+                            value={row.day_number}
+                            onChange={(e) => onChange({ ...row, day_number: e.target.value })}
+                            className={`${inputCls} w-20 font-mono`}
+                            placeholder={`1-${maxDay}`}
+                        />
+                    </div>
+                    {/* Absent Toggle */}
+                    <button
+                        type="button"
+                        onClick={() => onChange({ ...row, is_absent: !row.is_absent, weight_kg: "", bmi: "", body_fat_pct: "" })}
+                        className={`flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded transition-colors w-fit ${
+                            row.is_absent
+                                ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+                                : "bg-zinc-800 text-zinc-500 border border-zinc-700 hover:text-orange-400 hover:border-orange-500/30"
+                        }`}
+                        title={row.is_absent ? "Click to enter measurements" : "Click to mark absent"}
+                    >
+                        <span className="text-[9px]">{row.is_absent ? "✕" : "○"}</span>
+                        {row.is_absent ? "ABSENT" : "Mark Absent"}
+                    </button>
                 </div>
             </td>
 
@@ -1350,10 +1392,11 @@ function EditableRow({
                     type="number"
                     min={0}
                     step={0.1}
-                    value={row.weight_kg}
+                    value={row.is_absent ? "" : row.weight_kg}
                     onChange={(e) => onChange({ ...row, weight_kg: e.target.value })}
-                    className={inputCls}
-                    placeholder="e.g. 72.5"
+                    className={row.is_absent ? disabledInputCls : inputCls}
+                    placeholder={row.is_absent ? "Absent" : "e.g. 72.5"}
+                    disabled={row.is_absent}
                 />
             </td>
 
@@ -1363,10 +1406,11 @@ function EditableRow({
                     type="number"
                     min={0}
                     step={0.1}
-                    value={row.bmi}
+                    value={row.is_absent ? "" : row.bmi}
                     onChange={(e) => onChange({ ...row, bmi: e.target.value })}
-                    className={inputCls}
-                    placeholder="e.g. 23.8"
+                    className={row.is_absent ? disabledInputCls : inputCls}
+                    placeholder={row.is_absent ? "Absent" : "e.g. 23.8"}
+                    disabled={row.is_absent}
                 />
             </td>
 
@@ -1377,10 +1421,11 @@ function EditableRow({
                     min={0}
                     max={99.9}
                     step={0.1}
-                    value={row.body_fat_pct}
+                    value={row.is_absent ? "" : row.body_fat_pct}
                     onChange={(e) => onChange({ ...row, body_fat_pct: e.target.value })}
-                    className={inputCls}
-                    placeholder="e.g. 18.5"
+                    className={row.is_absent ? disabledInputCls : inputCls}
+                    placeholder={row.is_absent ? "Absent" : "e.g. 18.5"}
+                    disabled={row.is_absent}
                 />
             </td>
 
@@ -1401,7 +1446,7 @@ function EditableRow({
                         onClick={onSave}
                         disabled={saving}
                         className="p-1.5 rounded bg-green-600/30 text-green-400 hover:bg-green-600/50 transition-colors disabled:opacity-50"
-                        title="Save entry"
+                        title={row.is_absent ? "Save absence" : "Save entry"}
                     >
                         {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
                     </button>
